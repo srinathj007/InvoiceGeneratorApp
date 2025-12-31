@@ -66,81 +66,58 @@ class PdfService {
     final pdf = pw.Document();
 
     pdf.addPage(
-      pw.Page(
-        pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.symmetric(horizontal: 40, vertical: 30),
-        theme: pw.ThemeData.withFont(
-          base: pw.Font.times(),
-          bold: pw.Font.timesBold(),
-          fontFallback: _symbolFont != null ? [_symbolFont!] : [],
+      pw.MultiPage(
+        pageTheme: pw.PageTheme(
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.symmetric(horizontal: 40, vertical: 30),
+          theme: pw.ThemeData.withFont(
+            base: pw.Font.times(),
+            bold: pw.Font.timesBold(),
+            fontFallback: _symbolFont != null ? [_symbolFont!] : [],
+          ),
+          buildBackground: (context) => _buildWatermark(profile),
         ),
-        build: (_) {
+        header: (context) => pw.Column(
+          children: [
+            _buildHeader(
+              profile,
+              logoTL,
+              logoTR,
+              logoML,
+              logoMR,
+              pw.Font.times(),
+              pw.Font.timesBold(),
+            ),
+            pw.Divider(thickness: 2),
+            pw.SizedBox(height: 12),
+          ],
+        ),
+        footer: (context) => pw.Container(
+          alignment: pw.Alignment.centerRight,
+          margin: const pw.EdgeInsets.only(top: 10),
+          child: pw.Text(
+            'Page ${context.pageNumber} of ${context.pagesCount}',
+            style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey),
+          ),
+        ),
+        build: (context) {
           final regular = pw.Font.times();
           final bold = pw.Font.timesBold();
 
-          return pw.Stack(
-            children: [
-              // ---------------- WATERMARK (FIXED) ----------------
-// ---------------- WATERMARK (MATCHING SAMPLE IMAGE) ----------------
-// ---------------- WATERMARK (BOTTOM-LEFT → TOP-RIGHT, SINGLE LINE) ----------------
-// ---------------- WATERMARK (BOTTOM-LEFT → TOP-RIGHT) ----------------
-pw.Positioned(
-  left: -85,     // keep anchored to left
-  bottom: 290,     // start near bottom
-  child: pw.Transform.rotate(
-    angle: 0.90,  // 🔥 POSITIVE angle = bottom → top
-    child: pw.Opacity(
-      opacity: 0.18, // subtle like sample
-      child: pw.Text(
-        profile.businessName,
-        style: pw.TextStyle(
-          font: pw.Font.timesBold(),
-          fontSize: 80,
-          letterSpacing: 2,
-          color: PdfColor.fromInt(0xFFFF6F6F), // light red
-        ),
-      ),
-    ),
-  ),
-),
-
-
-
-
-              // ---------------- CONTENT ----------------
-              pw.Column(
-                children: [
-                  _buildHeader(
-                    profile,
-                    logoTL,
-                    logoTR,
-                    logoML,
-                    logoMR,
-                    regular,
-                    bold,
-                  ),
-                  pw.Divider(thickness: 2),
-                  pw.SizedBox(height: 12),
-
-                  _buildInfo(invoice, regular, bold),
-                  pw.SizedBox(height: 12),
-
-                  _buildTable(invoice, regular, bold),
-                  pw.SizedBox(height: 35),
-
-                  _buildSignatures(signature, regular, bold),
-                  pw.Spacer(),
-
-                  pw.Center(
-                    child: pw.Text(
-                      "Thank You! Visit Again",
-                      style: pw.TextStyle(font: bold, fontSize: 14),
-                    ),
-                  ),
-                ],
+          return [
+            _buildInfo(invoice, regular, bold),
+            pw.SizedBox(height: 12),
+            _buildTable(invoice, regular, bold),
+            pw.SizedBox(height: 35),
+            _buildSignatures(signature, regular, bold),
+            pw.SizedBox(height: 20),
+            pw.Center(
+              child: pw.Text(
+                "Thank You! Visit Again",
+                style: pw.TextStyle(font: bold, fontSize: 14),
               ),
-            ],
-          );
+            ),
+          ];
         },
       ),
     );
@@ -454,4 +431,29 @@ pw.Widget _buildSignatures(
   );
 }
 
+  pw.Widget _buildWatermark(BusinessProfile profile) {
+    return pw.Stack(
+      children: [
+        pw.Positioned(
+          left: -85,
+          bottom: 290,
+          child: pw.Transform.rotate(
+            angle: 0.90,
+            child: pw.Opacity(
+              opacity: 0.18,
+              child: pw.Text(
+                profile.businessName,
+                style: pw.TextStyle(
+                  font: pw.Font.timesBold(),
+                  fontSize: 80,
+                  letterSpacing: 2,
+                  color: PdfColor.fromInt(0xFFFF6F6F), // light red
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }
