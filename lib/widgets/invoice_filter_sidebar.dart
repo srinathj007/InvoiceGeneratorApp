@@ -16,38 +16,45 @@ class InvoiceFilterSidebar extends StatefulWidget {
 }
 
 class _InvoiceFilterSidebarState extends State<InvoiceFilterSidebar> {
-  final _customerNameController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _vehicleController = TextEditingController();
-  final _invoiceNumController = TextEditingController();
   DateTime? _startDate;
   DateTime? _endDate;
-  String _sortBy = 'created_at';
-  bool _isAscending = false;
 
   void _apply() {
     widget.onApply({
-      'customerName': _customerNameController.text.trim(),
-      'phoneNumber': _phoneController.text.trim(),
-      'vehicleNumber': _vehicleController.text.trim(),
-      'invoiceNumber': _invoiceNumController.text.trim(),
       'startDate': _startDate,
       'endDate': _endDate,
-      'sortBy': _sortBy,
-      'isAscending': _isAscending,
     });
+  }
+
+  void _setDatePreset(String preset) {
+    final now = DateTime.now();
+    setState(() {
+      switch (preset) {
+        case 'today':
+          _startDate = DateTime(now.year, now.month, now.day);
+          _endDate = now;
+          break;
+        case 'this_month':
+          _startDate = DateTime(now.year, now.month, 1);
+          _endDate = now;
+          break;
+        case 'last_month':
+          _startDate = DateTime(now.year, now.month - 1, 1);
+          _endDate = DateTime(now.year, now.month, 0);
+          break;
+        case 'this_year':
+          _startDate = DateTime(now.year, 1, 1);
+          _endDate = now;
+          break;
+      }
+    });
+    _apply();
   }
 
   void _reset() {
     setState(() {
-      _customerNameController.clear();
-      _phoneController.clear();
-      _vehicleController.clear();
-      _invoiceNumController.clear();
       _startDate = null;
       _endDate = null;
-      _sortBy = 'created_at';
-      _isAscending = false;
     });
     widget.onReset();
   }
@@ -82,69 +89,55 @@ class _InvoiceFilterSidebarState extends State<InvoiceFilterSidebar> {
           const Divider(height: 1),
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildTextField(context, _customerNameController, 'Customer Name', Icons.person_outline),
+                  Text(
+                    'DATE RANGE',
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      letterSpacing: 1.2,
+                      fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
                   const SizedBox(height: 16),
-                  _buildTextField(context, _phoneController, 'Phone Number', Icons.phone_outlined, isPhone: true),
-                  const SizedBox(height: 16),
-                  _buildTextField(context, _vehicleController, 'Vehicle Number', Icons.directions_car_outlined),
-                  const SizedBox(height: 16),
-                  _buildTextField(context, _invoiceNumController, 'Invoice Number', Icons.receipt_long_outlined),
+                  _buildPresetButton('This Month', 'this_month'),
+                  const SizedBox(height: 8),
+                  _buildPresetButton('Last Month', 'last_month'),
+                  const SizedBox(height: 8),
+                  _buildPresetButton('This Year', 'this_year'),
                   const SizedBox(height: 24),
                   
-                  Text('Date Range', style: theme.textTheme.titleSmall),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(child: _buildDatePicker(context, 'Start', _startDate, (d) => setState(() => _startDate = d))),
-                      const SizedBox(width: 12),
-                      Expanded(child: _buildDatePicker(context, 'End', _endDate, (d) => setState(() => _endDate = d))),
-                    ],
+                  Text(
+                    'CUSTOM RANGE',
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      letterSpacing: 1.2,
+                      fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.primary,
+                    ),
                   ),
+                  const SizedBox(height: 16),
+                  _buildDatePicker(context, 'From Date', _startDate, (d) => setState(() => _startDate = d)),
+                  const SizedBox(height: 12),
+                  _buildDatePicker(context, 'To Date', _endDate, (d) => setState(() => _endDate = d)),
                   
-                  const SizedBox(height: 24),
-                  Text('Sort By', style: theme.textTheme.titleSmall),
-                  const SizedBox(height: 8),
-                  DropdownButtonFormField<String>(
-                    value: _sortBy,
-                    decoration: const InputDecoration(
-                      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    ),
-                    items: const [
-                       DropdownMenuItem(value: 'created_at', child: Text('Created Date')),
-                       DropdownMenuItem(value: 'total_amount', child: Text('Total Amount')),
-                       DropdownMenuItem(value: 'date', child: Text('Invoice Date')),
-                       DropdownMenuItem(value: 'customer_name', child: Text('Customer Name')),
-                    ],
-                    onChanged: (v) => setState(() => _sortBy = v!),
-                  ),
-                   const SizedBox(height: 16),
-                  DropdownButtonFormField<bool>(
-                    value: _isAscending,
-                    decoration: const InputDecoration(
-                      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    ),
-                    items: const [
-                       DropdownMenuItem(value: false, child: Text('Newest First')),
-                       DropdownMenuItem(value: true, child: Text('Oldest First')),
-                    ],
-                    onChanged: (v) => setState(() => _isAscending = v!),
-                  ),
+                  const SizedBox(height: 40),
                 ],
               ),
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: _apply,
-                child: const Text('Apply Filters'),
-              ),
+            padding: const EdgeInsets.all(20.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: FilledButton(
+                    onPressed: _apply,
+                    child: const Text('Apply'),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -177,26 +170,44 @@ class _InvoiceFilterSidebarState extends State<InvoiceFilterSidebar> {
       },
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          border: Border.all(color: Theme.of(context).colorScheme.outline),
+          color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
           borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
         ),
         child: Row(
           children: [
+            Icon(Icons.calendar_today_outlined, size: 18, color: Theme.of(context).colorScheme.primary),
+            const SizedBox(width: 12),
             Expanded(
               child: Text(
-                date != null ? DateFormat('MM/dd').format(date) : hint,
+                date != null ? DateFormat('dd MMM yyyy').format(date) : hint,
                 style: TextStyle(
+                  fontSize: 14,
                   color: date != null 
                     ? Theme.of(context).colorScheme.onSurface 
                     : Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
             ),
-            Icon(Icons.calendar_today, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildPresetButton(String label, String preset) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton(
+        onPressed: () => _setDatePreset(preset),
+        style: OutlinedButton.styleFrom(
+          alignment: Alignment.centerLeft,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+        child: Text(label),
       ),
     );
   }

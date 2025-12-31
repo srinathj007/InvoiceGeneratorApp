@@ -115,7 +115,10 @@ class InvoiceService {
         .order('created_at', ascending: false)
         .limit(10);
 
-    return (response as List).map((json) {
+    if (response == null) return [];
+    final List list = response as List;
+
+    return list.map((json) {
       final itemsJson = (json['invoice_items'] as List?) ?? [];
       final items = itemsJson.map((i) => InvoiceItem.fromJson(i)).toList();
       return Invoice.fromJson(json, items);
@@ -127,6 +130,7 @@ class InvoiceService {
     String? phoneNumber,
     String? vehicleNumber,
     String? invoiceNumber,
+    String? searchQuery,
     DateTime? startDate,
     DateTime? endDate,
     String sortBy = 'created_at',
@@ -142,7 +146,13 @@ class InvoiceService {
         .select()
         .eq('user_id', user.id);
 
-    // Apply Filters
+    // Global Search (Mobile)
+    if (searchQuery != null && searchQuery.isNotEmpty) {
+      final s = '%$searchQuery%';
+      query = query.or('customer_name.ilike.$s,customer_phone.ilike.$s,vehicle_number.ilike.$s,invoice_number.ilike.$s');
+    }
+
+    // Apply Specific Filters (Tablet/Sidebar)
     if (customerName != null && customerName.isNotEmpty) {
       query = query.ilike('customer_name', '%$customerName%');
     }
@@ -156,11 +166,11 @@ class InvoiceService {
       query = query.ilike('invoice_number', '%$invoiceNumber%');
     }
     if (startDate != null) {
-      query = query.gte('date', startDate.toIso8601String());
+      query = query.gte('invoice_date', startDate.toIso8601String().split('T')[0]);
     }
     if (endDate != null) {
       final nextDay = DateTime(endDate.year, endDate.month, endDate.day).add(const Duration(days: 1));
-      query = query.lt('date', nextDay.toIso8601String());
+      query = query.lt('invoice_date', nextDay.toIso8601String().split('T')[0]);
     }
 
     // Apply Sorting
@@ -172,7 +182,10 @@ class InvoiceService {
     query = query.range(start, end);
 
     final response = await query.select('*, invoice_items(*)');
-    return (response as List).map((json) {
+    if (response == null) return [];
+    final List list = response as List;
+    
+    return list.map((json) {
       final itemsJson = (json['invoice_items'] as List?) ?? [];
       final items = itemsJson.map((i) => InvoiceItem.fromJson(i)).toList();
       return Invoice.fromJson(json, items);
@@ -196,7 +209,8 @@ class InvoiceService {
     }
 
     final response = await query;
-    final List data = (response as List?) ?? [];
+    if (response == null) return 0.0;
+    final List data = response as List;
     
     return data.fold<double>(0.0, (sum, item) {
       final val = item['total_amount'];

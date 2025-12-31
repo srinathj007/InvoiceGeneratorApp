@@ -26,8 +26,11 @@ class _ViewInvoicesScreenState extends State<ViewInvoicesScreen> {
   int _currentPage = 0;
   final int _pageSize = 10;
 
-  // Filters
+  // Filters & Search
   Map<String, dynamic> _currentFilters = {};
+  String? _searchQuery;
+  final TextEditingController _searchController = TextEditingController();
+  bool _isSearching = false;
 
   @override
   void initState() {
@@ -39,6 +42,7 @@ class _ViewInvoicesScreenState extends State<ViewInvoicesScreen> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -67,6 +71,7 @@ class _ViewInvoicesScreenState extends State<ViewInvoicesScreen> {
         phoneNumber: _currentFilters['phoneNumber'],
         vehicleNumber: _currentFilters['vehicleNumber'],
         invoiceNumber: _currentFilters['invoiceNumber'],
+        searchQuery: _searchQuery,
         startDate: _currentFilters['startDate'],
         endDate: _currentFilters['endDate'],
         sortBy: _currentFilters['sortBy'] ?? 'created_at',
@@ -98,8 +103,9 @@ class _ViewInvoicesScreenState extends State<ViewInvoicesScreen> {
       _currentFilters = filters;
     });
     _fetchInvoices(refresh: true);
-    if (ResponsiveLayout.isMobile(context)) {
-      Navigator.pop(context); // Close drawer on mobile
+    // Only pop if the drawer is open (prevents closing screen on search/sort popup)
+    if (_scaffoldKey.currentState?.isEndDrawerOpen == true) {
+      Navigator.pop(context);
     }
   }
 
@@ -113,39 +119,73 @@ class _ViewInvoicesScreenState extends State<ViewInvoicesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ResponsiveLayout(
-      mobile: _buildScaffold(context, showDrawer: true),
-      tablet: Row(
-        children: [
-          // Sidebar for Tablet/Desktop
-          SizedBox(
-            width: 320,
-            child: Material(
-              elevation: 4,
-              child: InvoiceFilterSidebar(onApply: _applyFilters, onReset: _resetFilters),
-            ),
-          ),
-          const VerticalDivider(width: 1),
-          Expanded(child: _buildScaffold(context, showDrawer: false)),
-        ],
-      ),
-    );
-  }
+    final isMobile = MediaQuery.of(context).size.width < 600;
+    final theme = Theme.of(context);
 
-  Widget _buildScaffold(BuildContext context, {required bool showDrawer}) {
+    // Sidebar for Tablet/Desktop
+    Widget? sidebar = !isMobile 
+      ? SizedBox(
+          width: 320,
+          child: Material(
+            elevation: 1,
+            child: InvoiceFilterSidebar(onApply: _applyFilters, onReset: _resetFilters),
+          ),
+        )
+      : null;
+
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
-        title: const Text('Invoices'),
+        title: _isSearching
+            ? TextField(
+                controller: _searchController,
+                autofocus: true,
+                decoration: const InputDecoration(
+                  hintText: 'Search customer, invoice, details...',
+                  border: InputBorder.none,
+                ),
+                onChanged: (value) {
+                  setState(() => _searchQuery = value);
+                  _fetchInvoices(refresh: true);
+                },
+              )
+            : const Text('Invoices'),
         actions: [
-          if (showDrawer)
-            IconButton(
-              icon: const Icon(Icons.filter_list),
-              onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
-            ),
+          IconButton(
+            icon: Icon(_isSearching ? Icons.close : Icons.search),
+            onPressed: () {
+              setState(() {
+                _isSearching = !_isSearching;
+                if (!_isSearching) {
+                  _searchQuery = null;
+                  _searchController.clear();
+                  _fetchInvoices(refresh: true);
+                }
+              });
+            },
+          ),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.sort),
+            onSelected: (value) {
+              final isAsc = value.endsWith('_asc');
+              final field = value.replaceFirst('_asc', '').replaceFirst('_desc', '');
+              _applyFilters({
+                ..._currentFilters,
+                'sortBy': field,
+                'isAscending': isAsc,
+              });
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(value: 'created_at_desc', child: Text('Newest First')),
+              const PopupMenuItem(value: 'created_at_asc', child: Text('Oldest First')),
+              const PopupMenuItem(value: 'total_amount_desc', child: Text('Highest Amount')),
+              const PopupMenuItem(value: 'total_amount_asc', child: Text('Lowest Amount')),
+              const PopupMenuItem(value: 'customer_name_asc', child: Text('Customer A-Z')),
+            ],
+          ),
         ],
       ),
-      endDrawer: showDrawer
+      endDrawer: isMobile
           ? Drawer(
               width: 320,
               child: InvoiceFilterSidebar(onApply: _applyFilters, onReset: _resetFilters),
@@ -156,12 +196,22 @@ class _ViewInvoicesScreenState extends State<ViewInvoicesScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const CreateInvoiceScreen()),
-          ).then((_) => _fetchInvoices(refresh: true));
+          ).then((result) {
+            if (result == true) _fetchInvoices(refresh: true);
+          });
         },
         icon: const Icon(Icons.add),
         label: const Text('New Invoice'),
       ),
-      body: _buildList(),
+      body: Row(
+        children: [
+          if (sidebar != null) ...[
+            sidebar,
+            const VerticalDivider(width: 1),
+          ],
+          Expanded(child: _buildList()),
+        ],
+      ),
     );
   }
 
