@@ -25,6 +25,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _phoneController = TextEditingController();
   final _customFieldLabelController = TextEditingController();
   final _customFieldPlaceholderController = TextEditingController();
+  final _gstinController = TextEditingController();
   
   bool _isLoading = true;
   bool _isSaving = false;
@@ -65,6 +66,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _customLogo4Url = profile.customLogo4Url;
           _customFieldLabelController.text = profile.customFieldLabel ?? '';
           _customFieldPlaceholderController.text = profile.customFieldPlaceholder ?? '';
+          _gstinController.text = profile.gstin ?? '';
         });
       }
     } catch (e) {
@@ -106,6 +108,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         customLogo4Url: _customLogo4Url,
         customFieldLabel: _customFieldLabelController.text.trim(),
         customFieldPlaceholder: _customFieldPlaceholderController.text.trim(),
+        gstin: _gstinController.text.trim(),
       );
 
       await _profileService.saveProfile(newProfile);
@@ -181,6 +184,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
           label: 'Proprietor Name',
           hint: 'e.g. Srinath',
           prefixIcon: Icons.person_outline,
+        ),
+        const SizedBox(height: 20),
+        CustomTextField(
+          controller: _gstinController,
+          label: 'GSTIN',
+          hint: 'e.g. 36BXKPG2180H1ZH',
+          prefixIcon: Icons.assignment_ind_outlined,
         ),
         const SizedBox(height: 32),
         _buildSectionHeader('Custom Fields'),

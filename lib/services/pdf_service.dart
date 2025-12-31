@@ -184,9 +184,14 @@ pw.Positioned(
             pw.Container(width: 60, height: 35, child: ml != null ? pw.Image(ml) : null),
             pw.Column(
               children: [
+                if (p.gstin?.isNotEmpty == true)
+                  pw.Text(
+                    "GSTIN: ${p.gstin}",
+                    style: pw.TextStyle(font: b, fontSize: 12),
+                  ),
                 pw.Text(
-                  "GSTIN: 36BXKPG2180H1ZH",
-                  style: pw.TextStyle(font: b, fontSize: 12),
+                  "Prop: ${p.proprietor}",
+                  style: pw.TextStyle(fontSize: 10),
                 ),
                 pw.Text(
                   "Ph: ${p.phoneNumbers}",

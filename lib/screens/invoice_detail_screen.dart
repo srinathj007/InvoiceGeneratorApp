@@ -228,26 +228,20 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
                             profile?.address ?? 'Business Address',
                             style: theme.textTheme.bodySmall,
                           ),
+                          if (profile?.gstin?.isNotEmpty == true)
+                            Text(
+                              'GSTIN: ${profile!.gstin}',
+                              style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                          Text(
+                            'Prop: ${profile?.proprietor ?? "Proprietor"}',
+                            style: theme.textTheme.bodySmall,
+                          ),
                           Text(
                             'Ph: ${profile?.phoneNumbers ?? "Phone Number"}',
                             style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500),
                           ),
                         ],
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primaryContainer.withOpacity(0.5),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        'INVOICE',
-                        style: theme.textTheme.labelLarge?.copyWith(
-                          color: theme.colorScheme.primary,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 2,
-                        ),
                       ),
                     ),
                   ],

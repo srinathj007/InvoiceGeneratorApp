@@ -63,9 +63,17 @@ class InvoiceView extends StatelessWidget {
           textAlign: TextAlign.center,
           style: const TextStyle(fontSize: 12),
         ),
-        const SizedBox(height: 6),
+        if (profile.gstin?.isNotEmpty == true)
+          Text(
+            "GSTIN: ${profile.gstin}",
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+          ),
         Text(
-          "Prop: ${profile.proprietor} | Ph: ${profile.phoneNumbers}",
+          "Prop: ${profile.proprietor}",
+          style: const TextStyle(fontSize: 12),
+        ),
+        Text(
+          "Ph: ${profile.phoneNumbers}",
           style: const TextStyle(fontSize: 12),
         ),
       ],
