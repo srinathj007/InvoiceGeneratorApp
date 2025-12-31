@@ -75,196 +75,148 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildLoginForm() {
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
+    return Padding(
+      padding: const EdgeInsets.all(24.0),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _animate(
-            delay: 100,
+          Center(
             child: Container(
               height: 64,
               width: 64,
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor,
-                borderRadius: BorderRadius.circular(18),
-                boxShadow: AppTheme.premiumShadows,
+                color: Theme.of(context).colorScheme.primary,
+                borderRadius: BorderRadius.circular(16),
               ),
               child: const Icon(Icons.account_balance_wallet_outlined, color: Colors.white, size: 32),
             ),
           ),
           const SizedBox(height: 24),
-          _animate(
-            delay: 200,
-            child: const Text(
-              'Welcome Back',
-              style: TextStyle(
-                fontSize: 30,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1A1C1E),
-                letterSpacing: -0.5,
-              ),
+          Text(
+            'Welcome Back',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
-          const SizedBox(height: 4),
-          _animate(
-            delay: 300,
-            child: Text(
-              'Sign in to your premium portfolio',
-              style: TextStyle(
-                fontSize: 15,
-                color: Colors.black.withAlpha(140),
-              ),
+          const SizedBox(height: 8),
+          Text(
+            'Sign in to your portfolio',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 32),
 
-          _animate(
-            delay: 400,
-            child: CustomTextField(
-              controller: _emailController,
-              label: 'Email Address',
-              hint: 'name@example.com',
-              prefixIcon: Icons.email_outlined,
-              keyboardType: TextInputType.emailAddress,
-            ),
+          CustomTextField(
+            controller: _emailController,
+            label: 'Email Address',
+            hint: 'name@example.com',
+            prefixIcon: Icons.email_outlined,
+            keyboardType: TextInputType.emailAddress,
           ),
           const SizedBox(height: 16),
-          _animate(
-            delay: 500,
-            child: CustomTextField(
-              controller: _passwordController,
-              label: 'Password',
-              hint: 'Enter your password',
-              prefixIcon: Icons.lock_outline,
-              isPassword: true,
-            ),
+          CustomTextField(
+            controller: _passwordController,
+            label: 'Password',
+            hint: 'Enter your password',
+            prefixIcon: Icons.lock_outline,
+            isPassword: true,
           ),
           
-          _animate(
-            delay: 600,
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
-                  );
-                },
-                child: const Text(
-                  'Forgot Password?',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.primaryColor,
-                  ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
+                );
+              },
+              child: Text(
+                'Forgot Password?',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
               ),
             ),
           ),
           
           const SizedBox(height: 20),
-          _animate(
-            delay: 700,
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor))
-                : CustomButton(
-                    text: 'Sign In',
-                    onPressed: _handleSignIn,
-                  ),
-          ),
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : CustomButton(
+                  text: 'Sign In',
+                  onPressed: _handleSignIn,
+                ),
           
           const SizedBox(height: 24),
-          _animate(
-            delay: 800,
-            child: Row(
-              children: [
-                Expanded(child: Divider(color: Colors.black.withAlpha(20))),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(
-                    'Or continue with',
-                    style: TextStyle(color: Colors.black.withAlpha(100), fontSize: 13),
-                  ),
-                ),
-                Expanded(child: Divider(color: Colors.black.withAlpha(20))),
-              ],
-            ),
-          ),
-          
-          const SizedBox(height: 24),
-          _animate(
-            delay: 900,
-            child: Row(
-              children: [
-                Expanded(
-                  child: SocialButton(
-                    text: 'Google',
-                    icon: const Icon(Icons.g_mobiledata, size: 32, color: Color(0xFF4285F4)),
-                    onPressed: () {},
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: SocialButton(
-                    text: 'Phone',
-                    icon: const Icon(Icons.phone_android, size: 20, color: AppTheme.primaryColor),
-                    onPressed: () {},
-                  ),
-                ),
-              ],
-            ),
-          ),
-          
+           Row(
+             children: [
+               Expanded(child: Divider(color: Theme.of(context).dividerColor)),
+               Padding(
+                 padding: const EdgeInsets.symmetric(horizontal: 16),
+                 child: Text(
+                   'Or continue with',
+                   style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13),
+                 ),
+               ),
+               Expanded(child: Divider(color: Theme.of(context).dividerColor)),
+             ],
+           ),
+           
+           const SizedBox(height: 24),
+           Row(
+             children: [
+               Expanded(
+                 child: SocialButton(
+                   text: 'Google',
+                   icon: const Icon(Icons.g_mobiledata, size: 32, color: Color(0xFF4285F4)),
+                   onPressed: () {},
+                 ),
+               ),
+               const SizedBox(width: 16),
+               Expanded(
+                 child: SocialButton(
+                   text: 'Phone',
+                   icon: Icon(Icons.phone_android, size: 20, color: Theme.of(context).colorScheme.primary),
+                   onPressed: () {},
+                 ),
+               ),
+             ],
+           ),
+
           const SizedBox(height: 32),
-          _animate(
-            delay: 1100,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  "Don't have an account? ",
-                  style: TextStyle(color: Colors.black.withAlpha(140)),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const SignupScreen()),
-                    );
-                  },
-                  child: const Text(
-                    'Sign Up',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.primaryColor,
-                    ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                "Don't have an account? ",
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+              ),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const SignupScreen()),
+                  );
+                },
+                child: Text(
+                  'Sign Up',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
       ),
-    );
-  }
-
-  Widget _animate({required Widget child, required int delay}) {
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0.0, end: 1.0),
-      duration: const Duration(milliseconds: 700),
-      curve: Interval(delay / 2000 > 1.0 ? 0.9 : delay / 2000, 1.0, curve: Curves.easeOutCubic),
-      builder: (context, value, child) {
-        return Opacity(
-          opacity: value,
-          child: Transform.translate(
-            offset: Offset(0, 20 * (1 - value)),
-            child: child,
-          ),
-        );
-      },
-      child: child,
     );
   }
 
@@ -273,40 +225,27 @@ class _LoginScreenState extends State<LoginScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _animate(
-            delay: 100,
-            child: Icon(
-              Icons.auto_graph_outlined,
-              size: 140,
-              color: AppTheme.primaryColor.withAlpha(200),
-            ),
+          Icon(
+            Icons.auto_graph_outlined,
+            size: 140,
+            color: Theme.of(context).colorScheme.primary.withAlpha(200),
           ),
           const SizedBox(height: 24),
-          _animate(
-            delay: 300,
-            child: const Text(
-              'Secure Finance',
-              style: TextStyle(
-                fontSize: 34,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1A1C1E),
-                letterSpacing: -1,
-              ),
+          Text(
+            'Secure Finance',
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 12),
-          _animate(
-            delay: 500,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 50),
-              child: Text(
-                'Experience your wealth grow in a safe and high-motion digital environment.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 17,
-                  color: Colors.black.withAlpha(140),
-                  height: 1.5,
-                ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 50),
+            child: Text(
+              'Experience your wealth grow in a safe and high-motion digital environment.',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
           ),
@@ -319,20 +258,35 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: ResponsiveLayout(
-        mobile: SafeArea(
-          child: ConstrainedCenter(
-            maxWidth: 450,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: GlassContainer(
-                child: _buildLoginForm(),
-              ),
+        mobile: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 400),
+              child: _buildLoginForm(),
             ),
           ),
         ),
-        tablet: SplitLayout(
-          form: _buildLoginForm(),
-          illustration: _buildIllustration(),
+        tablet: Row(
+          children: [
+            Expanded(
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(32),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 450),
+                    child: _buildLoginForm(),
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Container(
+                color: Theme.of(context).colorScheme.surfaceContainerLow,
+                child: _buildIllustration(),
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -113,55 +113,55 @@ class _ViewInvoicesScreenState extends State<ViewInvoicesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    return ResponsiveLayout(
+      mobile: _buildScaffold(context, showDrawer: true),
+      tablet: Row(
+        children: [
+          // Sidebar for Tablet/Desktop
+          SizedBox(
+            width: 320,
+            child: Material(
+              elevation: 4,
+              child: InvoiceFilterSidebar(onApply: _applyFilters, onReset: _resetFilters),
+            ),
+          ),
+          const VerticalDivider(width: 1),
+          Expanded(child: _buildScaffold(context, showDrawer: false)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildScaffold(BuildContext context, {required bool showDrawer}) {
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: const Color(0xFFF9FAFB),
       appBar: AppBar(
-        title: const Text('Invoices', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black87),
+        title: const Text('Invoices'),
         actions: [
-          if (ResponsiveLayout.isMobile(context))
+          if (showDrawer)
             IconButton(
               icon: const Icon(Icons.filter_list),
               onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
             ),
         ],
       ),
-      endDrawer: ResponsiveLayout.isMobile(context) 
-        ? Drawer(
-            width: 300,
-            child: SafeArea(
-              child: InvoiceFilterSidebar(onApply: _applyFilters, onReset: _resetFilters)
+      endDrawer: showDrawer
+          ? Drawer(
+              width: 320,
+              child: InvoiceFilterSidebar(onApply: _applyFilters, onReset: _resetFilters),
             )
-          ) 
-        : null,
+          : null,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const CreateInvoiceScreen()),
-          ).then((_) => _fetchInvoices(refresh: true)); // Refresh on return
+          ).then((_) => _fetchInvoices(refresh: true));
         },
-        backgroundColor: AppTheme.primaryColor,
         icon: const Icon(Icons.add),
         label: const Text('New Invoice'),
       ),
-      body: ResponsiveLayout(
-        mobile: _buildList(),
-        tablet: Row(
-          children: [
-            // Persistent Sidebar on Tablet/Desktop
-            SizedBox(
-              width: 320,
-              child: InvoiceFilterSidebar(onApply: _applyFilters, onReset: _resetFilters),
-            ),
-            const VerticalDivider(width: 1),
-            Expanded(child: _buildList()),
-          ],
-        ),
-      ),
+      body: _buildList(),
     );
   }
 
@@ -171,9 +171,28 @@ class _ViewInvoicesScreenState extends State<ViewInvoicesScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.receipt_long_outlined, size: 64, color: Colors.grey.shade300),
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.receipt_long_outlined, size: 48, color: Theme.of(context).colorScheme.outline),
+            ),
             const SizedBox(height: 16),
-            Text('No invoices found', style: TextStyle(color: Colors.grey.shade500, fontSize: 16)),
+            Text(
+              'No invoices found',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              'Create a new invoice to get started',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
           ],
         ),
       );
@@ -181,153 +200,119 @@ class _ViewInvoicesScreenState extends State<ViewInvoicesScreen> {
 
     return RefreshIndicator(
       onRefresh: () async => _fetchInvoices(refresh: true),
-      child: ListView.builder(
+      child: ListView.separated(
         controller: _scrollController,
-        padding: const EdgeInsets.all(16),
         itemCount: _invoices.length + (_hasMore ? 1 : 0),
+        separatorBuilder: (context, index) => Divider(
+          height: 1, 
+          indent: 20, 
+          endIndent: 20, 
+          color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.5),
+        ),
         itemBuilder: (context, index) {
           if (index == _invoices.length) {
             return const Center(child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator()));
           }
           final invoice = _invoices[index];
-          return _buildInvoiceCard(invoice);
+          return _buildInvoiceListItem(invoice);
         },
       ),
     );
   }
 
-  Widget _buildInvoiceCard(Invoice invoice) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withAlpha(10), blurRadius: 8, offset: const Offset(0, 2)),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(16),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => InvoiceDetailScreen(invoice: invoice)),
-            );
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      invoice.invoiceNumber,
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.green.shade50,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.green.shade200),
-                      ),
-                      child: Text(
-                        '₹${invoice.totalAmount.toStringAsFixed(2)}',
-                        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green.shade700, fontSize: 13),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                const SizedBox(height: 12),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Column 1: Customer Name + Phone
-                    Expanded(
-                      flex: 6,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              const Icon(Icons.person_outline, size: 16, color: Colors.black54),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  invoice.customerName,
-                                  style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w600, fontSize: 14),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                          if (invoice.customerPhone != null && invoice.customerPhone!.isNotEmpty) ...[
-                            const SizedBox(height: 6),
-                            Row(
-                              children: [
-                                const Icon(Icons.phone_outlined, size: 16, color: Colors.black54),
-                                const SizedBox(width: 8),
-                                Text(
-                                  invoice.customerPhone!,
-                                  style: const TextStyle(color: Colors.black54, fontSize: 13),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    // Column 2: Vehicle Number + Date
-                    Expanded(
-                      flex: 4,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          if (invoice.vehicleNumber != null && invoice.vehicleNumber!.isNotEmpty) ...[
-                             Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                const Icon(Icons.directions_car_outlined, size: 16, color: Colors.black54),
-                                const SizedBox(width: 4),
-                                Flexible(
-                                  child: Text(
-                                    invoice.vehicleNumber!,
-                                    style: const TextStyle(color: Colors.black54, fontSize: 13, fontWeight: FontWeight.w500),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                             const SizedBox(height: 6),
-                          ],
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              const Icon(Icons.calendar_today_outlined, size: 16, color: Colors.black54),
-                              const SizedBox(width: 4),
-                              Text(
-                                DateFormat('MMM dd, yyyy').format(invoice.date),
-                                style: const TextStyle(color: Colors.black54, fontSize: 13),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+  Widget _buildInvoiceListItem(Invoice invoice) {
+    final theme = Theme.of(context);
+    return InkWell(
+      onTap: () async {
+        final result = await Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => InvoiceDetailScreen(invoice: invoice)),
+        );
+        if (result == true) {
+          // Invoice was deleted or updated, refresh the list
+          _fetchInvoices(refresh: true);
+        }
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primaryContainer.withOpacity(0.4),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(Icons.description_outlined, color: theme.colorScheme.primary, size: 24),
             ),
-          ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        invoice.invoiceNumber,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.onSurface,
+                        ),
+                      ),
+                      Text(
+                        '₹${invoice.totalAmount.toStringAsFixed(2)}',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          invoice.customerName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        DateFormat('MMM dd, yyyy').format(invoice.date),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (invoice.vehicleNumber?.isNotEmpty == true) ...[
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Icon(Icons.label_outline, size: 14, color: theme.colorScheme.outline),
+                        const SizedBox(width: 4),
+                        Text(
+                          invoice.vehicleNumber!,
+                          style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.outline),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
+
 }

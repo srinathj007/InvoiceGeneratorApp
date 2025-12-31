@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../core/theme.dart';
-import '../widgets/custom_button.dart';
-import '../widgets/custom_text_field.dart';
 
 class InvoiceFilterSidebar extends StatefulWidget {
   final Function(Map<String, dynamic> filters) onApply;
@@ -57,52 +54,67 @@ class _InvoiceFilterSidebarState extends State<InvoiceFilterSidebar> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white.withAlpha(242),
-        border: Border(left: BorderSide(color: Colors.grey.shade200)),
-      ),
+      color: theme.scaffoldBackgroundColor,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text('Filters', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-              IconButton(
-                icon: const Icon(Icons.refresh, color: AppTheme.primaryColor),
-                onPressed: _reset,
-                tooltip: 'Reset Filters',
-              ),
-            ],
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Filters',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                TextButton.icon(
+                  onPressed: _reset,
+                  icon: const Icon(Icons.refresh, size: 18),
+                  label: const Text('Reset'),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 24),
+          const Divider(height: 1),
           Expanded(
             child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CustomTextField(controller: _customerNameController, label: 'Customer Name', hint: 'Enter customer name', prefixIcon: Icons.person_outline),
+                  _buildTextField(context, _customerNameController, 'Customer Name', Icons.person_outline),
                   const SizedBox(height: 16),
-                  CustomTextField(controller: _phoneController, label: 'Phone Number', hint: 'Enter phone number', prefixIcon: Icons.phone_outlined, keyboardType: TextInputType.phone),
+                  _buildTextField(context, _phoneController, 'Phone Number', Icons.phone_outlined, isPhone: true),
                   const SizedBox(height: 16),
-                  CustomTextField(controller: _vehicleController, label: 'Vehicle Number', hint: 'Enter vehicle number', prefixIcon: Icons.directions_car_outlined),
+                  _buildTextField(context, _vehicleController, 'Vehicle Number', Icons.directions_car_outlined),
                   const SizedBox(height: 16),
-                  CustomTextField(controller: _invoiceNumController, label: 'Invoice Number', hint: 'Enter invoice number', prefixIcon: Icons.receipt_long_outlined),
-                  const SizedBox(height: 16),
-                  _buildDatePicker('Start Date', _startDate, (d) => setState(() => _startDate = d)),
-                  const SizedBox(height: 16),
-                  _buildDatePicker('End Date', _endDate, (d) => setState(() => _endDate = d)),
+                  _buildTextField(context, _invoiceNumController, 'Invoice Number', Icons.receipt_long_outlined),
                   const SizedBox(height: 24),
-                  const Text('Sort By:', style: TextStyle(fontWeight: FontWeight.bold)),
+                  
+                  Text('Date Range', style: theme.textTheme.titleSmall),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(child: _buildDatePicker(context, 'Start', _startDate, (d) => setState(() => _startDate = d))),
+                      const SizedBox(width: 12),
+                      Expanded(child: _buildDatePicker(context, 'End', _endDate, (d) => setState(() => _endDate = d))),
+                    ],
+                  ),
+                  
+                  const SizedBox(height: 24),
+                  Text('Sort By', style: theme.textTheme.titleSmall),
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String>(
                     value: _sortBy,
-                    decoration: AppTheme.inputDecoration(hint: 'Sort By'),
+                    decoration: const InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
                     items: const [
-                       DropdownMenuItem(value: 'created_at', child: Text('Created At')),
+                       DropdownMenuItem(value: 'created_at', child: Text('Created Date')),
                        DropdownMenuItem(value: 'total_amount', child: Text('Total Amount')),
                        DropdownMenuItem(value: 'date', child: Text('Invoice Date')),
                        DropdownMenuItem(value: 'customer_name', child: Text('Customer Name')),
@@ -110,65 +122,82 @@ class _InvoiceFilterSidebarState extends State<InvoiceFilterSidebar> {
                     onChanged: (v) => setState(() => _sortBy = v!),
                   ),
                    const SizedBox(height: 16),
-                  const Text('Sort Order:', style: TextStyle(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
                   DropdownButtonFormField<bool>(
                     value: _isAscending,
-                    decoration: AppTheme.inputDecoration(hint: 'Order'),
+                    decoration: const InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
                     items: const [
-                       DropdownMenuItem(value: false, child: Text('DESC (Newest/Highest)')),
-                       DropdownMenuItem(value: true, child: Text('ASC (Oldest/Lowest)')),
+                       DropdownMenuItem(value: false, child: Text('Newest First')),
+                       DropdownMenuItem(value: true, child: Text('Oldest First')),
                     ],
                     onChanged: (v) => setState(() => _isAscending = v!),
                   ),
-                  const SizedBox(height: 32),
                 ],
               ),
             ),
           ),
-          const SizedBox(height: 16),
-          CustomButton(text: 'Apply Filters', onPressed: _apply),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: _apply,
+                child: const Text('Apply Filters'),
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildDatePicker(String label, DateTime? date, Function(DateTime) onSelect) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
-        const SizedBox(height: 8),
-        InkWell(
-          onTap: () async {
-            final picked = await showDatePicker(
-              context: context,
-              initialDate: date ?? DateTime.now(),
-              firstDate: DateTime(2000),
-              lastDate: DateTime(2100),
-            );
-            if (picked != null) onSelect(picked);
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.grey.shade300),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  date != null ? DateFormat('MM/dd/yyyy').format(date) : 'mm/dd/yyyy',
-                  style: TextStyle(color: date != null ? Colors.black87 : Colors.black45),
-                ),
-                const Icon(Icons.calendar_today, size: 18, color: Colors.black54),
-              ],
-            ),
-          ),
+  Widget _buildTextField(BuildContext context, TextEditingController controller, String label, IconData icon, {bool isPhone = false}) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: isPhone ? TextInputType.phone : TextInputType.text,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, size: 20),
+        isDense: true,
+      ),
+    );
+  }
+
+  Widget _buildDatePicker(BuildContext context, String hint, DateTime? date, Function(DateTime) onSelect) {
+    return InkWell(
+      onTap: () async {
+        final picked = await showDatePicker(
+          context: context,
+          initialDate: date ?? DateTime.now(),
+          firstDate: DateTime(2000),
+          lastDate: DateTime(2100),
+        );
+        if (picked != null) onSelect(picked);
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          border: Border.all(color: Theme.of(context).colorScheme.outline),
+          borderRadius: BorderRadius.circular(12),
         ),
-      ],
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                date != null ? DateFormat('MM/dd').format(date) : hint,
+                style: TextStyle(
+                  color: date != null 
+                    ? Theme.of(context).colorScheme.onSurface 
+                    : Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+            Icon(Icons.calendar_today, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
+          ],
+        ),
+      ),
     );
   }
 }

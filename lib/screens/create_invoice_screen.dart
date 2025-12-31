@@ -2,15 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../core/theme.dart';
 import '../models/invoice.dart';
+import '../models/business_profile.dart';
 import '../services/invoice_service.dart';
+import '../services/profile_service.dart';
 import '../services/supabase_service.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/responsive_layout.dart';
-import '../widgets/invoice_split_layout.dart';
 
 class CreateInvoiceScreen extends StatefulWidget {
-  const CreateInvoiceScreen({super.key});
+  final Invoice? invoiceToEdit;
+  const CreateInvoiceScreen({super.key, this.invoiceToEdit});
 
   @override
   State<CreateInvoiceScreen> createState() => _CreateInvoiceScreenState();
@@ -18,13 +20,16 @@ class CreateInvoiceScreen extends StatefulWidget {
 
 class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
   final _invoiceService = InvoiceService();
+  final _profileService = ProfileService();
   final _authService = AuthService();
+  
+  BusinessProfile? _profile;
   
   // Customer & Bill Details
   final _customerNameController = TextEditingController();
   final _customerPhoneController = TextEditingController();
   final _vehicleNumberController = TextEditingController();
-  final _invoiceNumberController = TextEditingController(text: 'IN${DateFormat('yyyyMMddHHmm').format(DateTime.now())}');
+  late TextEditingController _invoiceNumberController;
   DateTime _selectedDate = DateTime.now();
   
   // Item Entry Controllers
@@ -42,6 +47,63 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
   final List<InvoiceItem> _items = [];
   bool _isSaving = false;
 
+  // FocusNodes for "Clear on Focus" logic
+  final _qtyFocus = FocusNode();
+  final _priceFocus = FocusNode();
+  final _discountFocus = FocusNode();
+  final _globalDiscountFocus = FocusNode();
+  final _gstFocus = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    _invoiceNumberController = TextEditingController(text: 'IN${DateFormat('yyyyMMddHHmm').format(DateTime.now())}');
+    
+    if (widget.invoiceToEdit != null) {
+      _loadInvoiceData(widget.invoiceToEdit!);
+    }
+    _loadBusinessProfile();
+
+    // Setup "Clear on Focus" listeners
+    _qtyFocus.addListener(() => _onFocusChange(_itemQuantityController, _qtyFocus.hasFocus));
+    _priceFocus.addListener(() => _onFocusChange(_itemPriceController, _priceFocus.hasFocus));
+    _discountFocus.addListener(() => _onFocusChange(_itemDiscountController, _discountFocus.hasFocus));
+    _globalDiscountFocus.addListener(() => _onFocusChange(_globalDiscountController, _globalDiscountFocus.hasFocus));
+    _gstFocus.addListener(() => _onFocusChange(_gstController, _gstFocus.hasFocus));
+  }
+
+  void _onFocusChange(TextEditingController controller, bool hasFocus) {
+    if (hasFocus && (controller.text == '0' || controller.text == '0.0')) {
+      controller.clear();
+    }
+  }
+
+  Future<void> _loadBusinessProfile() async {
+    final profile = await _profileService.getProfile();
+    if (mounted) {
+      setState(() {
+        _profile = profile;
+      });
+    }
+  }
+
+  void _loadInvoiceData(Invoice invoice) {
+    _customerNameController.text = invoice.customerName;
+    _customerPhoneController.text = invoice.customerPhone ?? '';
+    _vehicleNumberController.text = invoice.vehicleNumber ?? '';
+    _invoiceNumberController.text = invoice.invoiceNumber;
+    _selectedDate = invoice.date;
+    
+    _globalDiscountController.text = invoice.discountTotal.toString();
+    _isGlobalDiscountPercentage = invoice.isDiscountTotalPercentage;
+    _gstController.text = invoice.gstPercentage.toString();
+    
+    setState(() {
+      _items.clear();
+      _items.addAll(invoice.items);
+    });
+  }
+
   @override
   void dispose() {
     _customerNameController.dispose();
@@ -54,6 +116,12 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
     _itemDiscountController.dispose();
     _globalDiscountController.dispose();
     _gstController.dispose();
+    
+    _qtyFocus.dispose();
+    _priceFocus.dispose();
+    _discountFocus.dispose();
+    _globalDiscountFocus.dispose();
+    _gstFocus.dispose();
     super.dispose();
   }
 
@@ -75,7 +143,6 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
     return afterDiscount + (afterDiscount * (gst / 100));
   }
 
-
   Future<void> _saveInvoice() async {
     if (_customerNameController.text.isEmpty) {
       AppTheme.showToast(context, 'Customer Name is required', isError: true);
@@ -92,6 +159,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
       if (userId == null) throw Exception('No user');
 
       final invoice = Invoice(
+        id: widget.invoiceToEdit?.id,
         userId: userId,
         customerName: _customerNameController.text.trim(),
         customerPhone: _customerPhoneController.text.trim(),
@@ -105,10 +173,16 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
         totalAmount: _grandTotal,
       );
 
-      await _invoiceService.createInvoice(invoice, _items);
+      if (widget.invoiceToEdit != null) {
+        await _invoiceService.updateInvoice(invoice, _items);
+        if (mounted) AppTheme.showToast(context, 'Invoice updated successfully');
+      } else {
+        await _invoiceService.createInvoice(invoice, _items);
+        if (mounted) AppTheme.showToast(context, 'Invoice saved successfully');
+      }
+
       if (mounted) {
-        AppTheme.showToast(context, 'Invoice saved successfully');
-        Navigator.pop(context);
+        Navigator.pop(context, true);
       }
     } catch (e) {
       if (mounted) {
@@ -120,9 +194,6 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
       }
     }
   }
-
-
-  // ... (previous methods)
 
   void _addItem() {
     final name = _itemNameController.text.trim();
@@ -180,103 +251,14 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
     _isItemDiscountPercentage = false;
   }
 
-  // ... (save method remains same)
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ResponsiveLayout(
-        mobile: SafeArea(
-          child: ConstrainedCenter(
-            maxWidth: 600,
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: GlassContainer(
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildTopBar(),
-                      const SizedBox(height: 24),
-                      _buildCustomerSection(),
-                      const Divider(height: 48),
-                      _buildItemEntrySection(),
-                      const SizedBox(height: 24),
-                      _buildItemsList(),
-                      const Divider(height: 48),
-                      _buildSummarySection(),
-                      const SizedBox(height: 32),
-                      _buildSaveButton(),
-                      const SizedBox(height: 16),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-        tablet: SafeArea(
-          child: InvoiceSplitLayout(
-            leftSide: SingleChildScrollView( // Form on Left
-               physics: const BouncingScrollPhysics(),
-               child: Column(
-                 crossAxisAlignment: CrossAxisAlignment.start,
-                 children: [
-                   _buildTopBar(showClear: false),
-                   const SizedBox(height: 24),
-                   _buildCustomerSection(),
-                   const Divider(height: 32),
-                   _buildItemEntrySection(),
-                 ],
-               ),
-            ),
-            rightSide: SingleChildScrollView( // Preview on Right
-              physics: const BouncingScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                   _buildPreviewHeader(),
-                   const SizedBox(height: 16),
-                   _buildItemsList(),
-                   const Divider(height: 32),
-                   _buildSummarySection(),
-                   const SizedBox(height: 32),
-                   _buildSaveButton(),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ... (rest of build methods)
-
-  Widget _buildTopBar({bool showClear = true}) {
-    // Header Row
-    return Row(
-      children: [
-        IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.close, color: Color(0xFF1A1C1E)),
-        ),
-        const SizedBox(width: 8),
-        const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Create Invoice',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF1A1C1E)),
-            ),
-            Text('Enter bill details', style: TextStyle(fontSize: 13, color: Colors.black54)),
-          ],
-        ),
-        if (showClear) ...[
-          const Spacer(),
-          TextButton(
+      appBar: AppBar(
+        title: const Text('Create Invoice'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
             onPressed: () {
               setState(() {
                 _customerNameController.clear();
@@ -285,361 +267,478 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                 _items.clear();
               });
             },
-            child: const Text('Clear', style: TextStyle(color: Colors.redAccent)),
           ),
         ],
-      ],
+      ),
+      body: ResponsiveLayout(
+        mobile: _buildCompactLayout(),
+        tablet: _buildSplitLayout(),
+      ),
     );
   }
 
-  Widget _buildPreviewHeader() {
+  Widget _buildCompactLayout() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildCustomerCard(),
+          const SizedBox(height: 16),
+          _buildItemFormCard(),
+          const SizedBox(height: 16),
+          _buildItemsList(),
+          const SizedBox(height: 24),
+          _buildSummaryCard(),
+          const SizedBox(height: 24),
+          _buildSaveButton(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSplitLayout() {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.stretch, // Ensure equal height
       children: [
-        // Match the structure of _buildTopBar for alignment
-        // Left side has IconButton(48px) + Gap(8)
-        const SizedBox(width: 48 + 8), 
-        const Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Invoice Preview', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF1A1C1E))), // Match font size 24
-              Text('Real-time updates', style: TextStyle(fontSize: 13, color: Colors.black54)),
-            ],
+        Expanded(
+          flex: 1,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildCustomerCard(),
+                const SizedBox(height: 24),
+                _buildItemFormCard(),
+              ],
+            ),
           ),
         ),
-        TextButton(
-          onPressed: () {
-            setState(() {
-              _customerNameController.clear();
-              _customerPhoneController.clear();
-              _vehicleNumberController.clear();
-              _items.clear();
-            });
-          },
-          child: const Text('Clear All', style: TextStyle(color: Colors.redAccent)),
+        const SizedBox(width: 4), 
+        Expanded(
+          flex: 1,
+          child: Container(
+            color: Theme.of(context).colorScheme.surfaceContainerLow.withOpacity(0.3),
+            padding: const EdgeInsets.all(24),
+            child: Card(
+              margin: EdgeInsets.zero,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.5)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text('Invoice Preview', style: Theme.of(context).textTheme.headlineSmall),
+                    const SizedBox(height: 24),
+                    Expanded(
+                      child: _buildItemsList(isScrollable: true),
+                    ),
+                    const Divider(height: 32),
+                    _buildSummaryCard(showAsCard: false),
+                    const SizedBox(height: 24),
+                    _buildSaveButton(),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildItemsList() {
+  Widget _buildCustomerCard() {
+    final customLabel = (_profile?.customFieldLabel?.isNotEmpty == true) ? _profile!.customFieldLabel! : 'Reference No';
+    final customHint = (_profile?.customFieldPlaceholder?.isNotEmpty == true) ? _profile!.customFieldPlaceholder! : 'Enter detail...';
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.person_outline, size: 20, color: Theme.of(context).colorScheme.primary),
+                const SizedBox(width: 8),
+                Text('Customer Details', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+              ],
+            ),
+            const SizedBox(height: 16),
+            CustomTextField(
+              controller: _customerNameController,
+              label: 'Customer Name',
+              hint: 'Enter customer name',
+              prefixIcon: Icons.person_outline,
+            ),
+            const SizedBox(height: 12),
+            CustomTextField(
+              controller: _customerPhoneController,
+              label: 'Mobile Number',
+              hint: 'Enter mobile number',
+              prefixIcon: Icons.phone_outlined,
+              keyboardType: TextInputType.phone,
+            ),
+            const SizedBox(height: 12),
+            CustomTextField(
+              controller: _vehicleNumberController,
+              label: customLabel,
+              hint: customHint,
+              prefixIcon: Icons.label_outline,
+            ),
+            const SizedBox(height: 16),
+            InkWell(
+              onTap: () async {
+                final date = await showDatePicker(
+                  context: context,
+                  initialDate: _selectedDate,
+                  firstDate: DateTime(2000),
+                  lastDate: DateTime(2100),
+                );
+                if (date != null) setState(() => _selectedDate = date);
+              },
+              borderRadius: BorderRadius.circular(12),
+              child: InputDecorator(
+                decoration: InputDecoration(
+                  labelText: 'Invoice Date',
+                  prefixIcon: const Icon(Icons.calendar_today_outlined),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: Text(DateFormat('dd MMM yyyy').format(_selectedDate)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildItemFormCard() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Add Item', style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _itemNameController,
+              decoration: const InputDecoration(labelText: 'Item Name', prefixIcon: Icon(Icons.shopping_bag_outlined)),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _itemQuantityController,
+                    focusNode: _qtyFocus,
+                    decoration: const InputDecoration(labelText: 'Qty'),
+                    keyboardType: TextInputType.number,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  flex: 2,
+                  child: TextField(
+                    controller: _itemPriceController,
+                    focusNode: _priceFocus,
+                    decoration: const InputDecoration(labelText: 'Price', prefixText: '₹'),
+                    keyboardType: TextInputType.numberWithOptions(decimal: true),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text('Discount', style: Theme.of(context).textTheme.bodySmall),
+                    const SizedBox(width: 8),
+                    SegmentedButton<bool>(
+                      segments: const [
+                        ButtonSegment<bool>(value: false, label: Text('₹')),
+                        ButtonSegment<bool>(value: true, label: Text('%')),
+                      ],
+                      selected: {_isItemDiscountPercentage},
+                      onSelectionChanged: (Set<bool> newSelection) {
+                        setState(() {
+                          _isItemDiscountPercentage = newSelection.first;
+                        });
+                      },
+                      showSelectedIcon: false,
+                      style: SegmentedButton.styleFrom(
+                        visualDensity: VisualDensity.compact,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        padding: EdgeInsets.zero,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _itemDiscountController,
+                  focusNode: _discountFocus,
+                  decoration: const InputDecoration(
+                    isDense: true,
+                    contentPadding: EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: _addItem,
+                icon: const Icon(Icons.add),
+                label: const Text('Add to Invoice'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildItemsList({bool isScrollable = false}) {
     if (_items.isEmpty) {
-      return Container(
-        padding: const EdgeInsets.all(24),
-        alignment: Alignment.center,
-        child: const Text('No items added yet', style: TextStyle(color: Colors.black38)),
+      final placeholder = Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 32),
+          child: Text(
+            'No items added',
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
       );
+      
+      return isScrollable ? SingleChildScrollView(child: placeholder) : placeholder;
     }
+
+    final listWidget = ListView.separated(
+      shrinkWrap: !isScrollable,
+      physics: isScrollable ? const AlwaysScrollableScrollPhysics() : const NeverScrollableScrollPhysics(),
+      itemCount: _items.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 8),
+      itemBuilder: (context, index) {
+        final item = _items[index];
+        return Card(
+          margin: EdgeInsets.zero,
+          child: ListTile(
+            title: Text(item.itemName, style: const TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Text(
+              '${item.quantity} x ₹${item.price.toStringAsFixed(2)} - Disc: ${item.isDiscountItemPercentage ? "${item.discountItem}%" : "₹${item.discountItem}"}',
+            ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '₹${item.amount.toStringAsFixed(2)}',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete_outline, size: 20),
+                  onPressed: () => setState(() => _items.removeAt(index)),
+                  color: Theme.of(context).colorScheme.error,
+                ),
+              ],
+            ),
+            onTap: () => _editItem(index),
+          ),
+        );
+      },
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Bill Items', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 12),
-        ...List.generate(_items.length, (index) {
-          final item = _items[index];
-          return InkWell( // Make draggable or clickable to edit
-            onTap: () => _editItem(index),
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 8),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade200),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(item.itemName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                        Row(
-                          children: [
-                            Text('${item.quantity} x ₹${item.price.toStringAsFixed(2)}', style: const TextStyle(fontSize: 12, color: Colors.black54)),
-                            if(item.discountItem > 0)
-                              Text(
-                                '  (Disc: ${item.isDiscountItemPercentage ? "${item.discountItem}%" : "₹${item.discountItem}"})',
-                                style: const TextStyle(fontSize: 11, color: Colors.green, fontWeight: FontWeight.w600)
-                              ),
-                          ],
-                        ),
-                      ],
+        Text(
+          'Items (${_items.length})', 
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(color: Theme.of(context).colorScheme.primary)
+        ),
+        const SizedBox(height: 8),
+        isScrollable ? Expanded(child: listWidget) : listWidget,
+      ],
+    );
+  }
+
+  Widget _buildSummaryCard({bool showAsCard = true}) {
+    final content = Column(
+      children: [
+            _buildSummaryRow('Subtotal', '₹${_subtotal.toStringAsFixed(2)}'),
+            const SizedBox(height: 12),
+            
+            // Discount Row
+            Row(
+              children: [
+                const Text('Discount', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 13)),
+                const SizedBox(width: 4),
+                SizedBox(
+                  width: 70,
+                  child: SegmentedButton<bool>(
+                    segments: const [
+                      ButtonSegment<bool>(value: false, label: Text('₹', style: TextStyle(fontSize: 12))),
+                      ButtonSegment<bool>(value: true, label: Text('%', style: TextStyle(fontSize: 12))),
+                    ],
+                    selected: {_isGlobalDiscountPercentage},
+                    onSelectionChanged: (Set<bool> newSelection) {
+                      setState(() {
+                        _isGlobalDiscountPercentage = newSelection.first;
+                      });
+                    },
+                    showSelectedIcon: false,
+                    style: SegmentedButton.styleFrom(
+                      visualDensity: VisualDensity.compact,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      padding: EdgeInsets.zero,
                     ),
                   ),
-                  Text('₹${item.amount.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primaryColor)),
-                  const SizedBox(width: 8),
-                  IconButton(
-                    icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
-                    onPressed: () => setState(() => _items.removeAt(index)),
+                ),
+                const SizedBox(width: 8),
+                SizedBox(
+                  width: 55,
+                  child: TextField(
+                    controller: _globalDiscountController,
+                    focusNode: _globalDiscountFocus,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: const InputDecoration(
+                      isDense: true, 
+                      contentPadding: EdgeInsets.all(6),
+                      border: OutlineInputBorder(),
+                    ),
+                    style: const TextStyle(fontSize: 13),
+                    textAlign: TextAlign.end,
+                    onChanged: (_) => setState(() {}),
                   ),
-                ],
-              ),
+                ),
+                const Spacer(),
+                if (_discountValue > 0)
+                  Text(
+                    '- ₹${_discountValue.toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
+                  )
+                else
+                  Text(
+                    '₹0.00',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
+                      fontSize: 13,
+                    ),
+                  ),
+              ],
             ),
-          );
-        }),
+            const SizedBox(height: 12),
+            
+            // GST Row
+            Row(
+              children: [
+                const Text('GST (%)', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 13)),
+                const SizedBox(width: 8),
+                SizedBox(
+                  width: 55,
+                  child: TextField(
+                    controller: _gstController,
+                    focusNode: _gstFocus,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: const InputDecoration(
+                      isDense: true, 
+                      contentPadding: EdgeInsets.all(6),
+                      border: OutlineInputBorder(),
+                    ),
+                    style: const TextStyle(fontSize: 13),
+                    textAlign: TextAlign.end,
+                    onChanged: (_) => setState(() {}),
+                  ),
+                ),
+                const Spacer(),
+                if (double.tryParse(_gstController.text) != null && (double.tryParse(_gstController.text) ?? 0) > 0)
+                  Text(
+                    '+ ₹${((_subtotal - _discountValue) * ((double.tryParse(_gstController.text) ?? 0) / 100)).toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      color: Colors.green,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
+                  )
+                else
+                  Text(
+                    '₹0.00',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
+                      fontSize: 13,
+                    ),
+                  ),
+              ],
+            ),
+            const Divider(height: 32),
+            _buildSummaryRow(
+              'Grand Total', 
+              '₹${_grandTotal.toStringAsFixed(2)}', 
+              isBold: true, 
+              color: Theme.of(context).colorScheme.primary
+            ),
+      ],
+    );
+
+    if (!showAsCard) return content;
+
+    return Card(
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        side: BorderSide(color: Colors.black.withOpacity(0.05)),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: content,
+      ),
+    );
+  }
+
+  Widget _buildSummaryRow(String label, String value, {bool isBold = false, Color? color}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: TextStyle(fontWeight: isBold ? FontWeight.bold : FontWeight.normal)),
+        Text(
+          value, 
+          style: TextStyle(
+            fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+            fontSize: isBold ? 20 : 14,
+            color: color
+          )
+        ),
       ],
     );
   }
 
   Widget _buildSaveButton() {
-     return _isSaving 
-            ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor))
-            : CustomButton(text: 'Save Invoice', onPressed: _saveInvoice);
-  }
-
-  Widget _buildCustomerSection() {
-    return Column(
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: CustomTextField(
-                controller: _customerNameController,
-                label: 'Customer Name',
-                hint: 'Enter name',
-                prefixIcon: Icons.person_outline,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: CustomTextField(
-                controller: _customerPhoneController,
-                label: 'Phone Number',
-                hint: 'Enter phone',
-                prefixIcon: Icons.phone_outlined,
-                keyboardType: TextInputType.phone,
-              ),
-            ),
-          ],
+    return SizedBox(
+      width: double.infinity,
+      child: FilledButton(
+        onPressed: _isSaving ? null : _saveInvoice,
+        style: FilledButton.styleFrom(
+          padding: const EdgeInsets.all(16),
         ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: CustomTextField(
-                controller: _vehicleNumberController,
-                label: 'Vehicle Number',
-                hint: 'e.g. TS 08 AB 1234',
-                prefixIcon: Icons.directions_car_outlined,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(child: _buildDatePicker()),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDatePicker() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('Date', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black87)),
-        const SizedBox(height: 8),
-        InkWell(
-          onTap: () async {
-            final date = await showDatePicker(
-              context: context,
-              initialDate: _selectedDate,
-              firstDate: DateTime(2000),
-              lastDate: DateTime(2100),
-            );
-            if (date != null) setState(() => _selectedDate = date);
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.grey.shade300),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.calendar_today_outlined, size: 18, color: Colors.black54),
-                const SizedBox(width: 12),
-                Text(DateFormat('MM/dd/yyyy').format(_selectedDate), style: const TextStyle(fontSize: 15)),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildItemEntrySection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('Add Items', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 16),
-        CustomTextField(
-          controller: _itemNameController,
-          label: 'Item Name',
-          hint: 'Enter item name',
-          prefixIcon: Icons.inventory_2_outlined,
-        ),
-        const SizedBox(height: 16),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Expanded(
-              flex: 2,
-              child: CustomTextField(
-                controller: _itemQuantityController,
-                label: 'Qty',
-                hint: '0',
-                keyboardType: TextInputType.number,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              flex: 3,
-              child: CustomTextField(
-                controller: _itemPriceController,
-                label: 'Price',
-                hint: '0.00',
-                keyboardType: TextInputType.number,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-             Expanded(
-              flex: 3,
-              child: CustomTextField(
-                controller: _itemDiscountController,
-                label: 'Discount',
-                hint: '0',
-                keyboardType: TextInputType.number,
-              ),
-            ),
-            const SizedBox(width: 12),
-            _buildToggle(
-              isPercentage: _isItemDiscountPercentage, 
-              onTap: (val) => setState(() => _isItemDiscountPercentage = val)
-            ),
-          ],
-        ),
-        const SizedBox(height: 20),
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton.icon(
-            onPressed: _addItem,
-            icon: const Icon(Icons.add),
-            label: const Text('Add to Bill'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryColor,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildToggle({required bool isPercentage, required Function(bool) onTap}) {
-    return Container(
-      height: 50,
-      decoration: BoxDecoration(
-        color: Colors.grey.shade200,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
+        child: _isSaving 
+          ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
+          : const Text('Save Invoice', style: TextStyle(fontSize: 16)),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildToggleOption('₹', !isPercentage, () => onTap(false)),
-          _buildToggleOption('%', isPercentage, () => onTap(true)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildToggleOption(String text, bool isSelected, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: isSelected ? AppTheme.primaryColor : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Text(
-          text,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: isSelected ? Colors.white : Colors.black54,
-          ),
-        ),
-      ),
-    );
-  }
-
-
-  Widget _buildSummarySection() {
-    return Column(
-      children: [
-        _buildSummaryRow('Subtotal', '₹${_subtotal.toStringAsFixed(2)}'),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            const Expanded(child: Text('Discount on Total', style: TextStyle(color: Colors.black54))),
-            _buildToggle(
-              isPercentage: _isGlobalDiscountPercentage, 
-              onTap: (val) => setState(() => _isGlobalDiscountPercentage = val)
-            ),
-            const SizedBox(width: 12),
-            SizedBox(
-              width: 80,
-              child: TextField(
-                controller: _globalDiscountController,
-                onChanged: (_) => setState(() {}),
-                keyboardType: TextInputType.number,
-                textAlign: TextAlign.end,
-                decoration: const InputDecoration(border: InputBorder.none, isCollapsed: true, contentPadding: EdgeInsets.zero),
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            const Expanded(child: Text('GST (%)', style: TextStyle(color: Colors.black54))),
-            SizedBox(
-              width: 80,
-              child: TextField(
-                controller: _gstController,
-                onChanged: (_) => setState(() {}),
-                keyboardType: TextInputType.number,
-                textAlign: TextAlign.end,
-                decoration: const InputDecoration(border: InputBorder.none, isCollapsed: true, contentPadding: EdgeInsets.zero),
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
-        ),
-        const Divider(height: 32),
-        _buildSummaryRow('Grand Total', '₹${_grandTotal.toStringAsFixed(2)}', isBold: true),
-      ],
-    );
-  }
-
-  Widget _buildSummaryRow(String label, String value, {bool isBold = false}) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: TextStyle(color: isBold ? Colors.black : Colors.black54, fontWeight: isBold ? FontWeight.bold : FontWeight.normal, fontSize: isBold ? 18 : 14)),
-        Text(value, style: TextStyle(color: isBold ? AppTheme.primaryColor : Colors.black, fontWeight: isBold ? FontWeight.bold : FontWeight.bold, fontSize: isBold ? 22 : 14)),
-      ],
     );
   }
 }

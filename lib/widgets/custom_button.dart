@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../core/theme.dart';
+
 
 class CustomButton extends StatelessWidget {
   final String text;
@@ -17,45 +17,48 @@ class CustomButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final colorScheme = Theme.of(context).colorScheme;
+    
+    return SizedBox(
       width: double.infinity,
       height: 56,
-      decoration: BoxDecoration(
-        gradient: isPrimary
-            ? const LinearGradient(
-                colors: [AppTheme.primaryColor, Color(0xFF42A5F5)],
-              )
-            : null,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: isPrimary ? AppTheme.premiumShadows : null,
-        border: isPrimary ? null : Border.all(color: Colors.black.withAlpha(20)),
-      ),
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          shadowColor: Colors.transparent,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (icon != null) ...[
-              icon!,
-              const SizedBox(width: 12),
-            ],
-            Text(
-              text,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: isPrimary ? Colors.white : AppTheme.primaryColor,
-                letterSpacing: 0.5,
+      child: isPrimary
+          ? FilledButton(
+              onPressed: onPressed,
+              style: FilledButton.styleFrom(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               ),
+              child: _buildContent(colorScheme.onPrimary),
+            )
+          : OutlinedButton(
+              onPressed: onPressed,
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(color: colorScheme.outline.withOpacity(0.2)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+              child: _buildContent(colorScheme.primary),
             ),
-          ],
+    );
+  }
+
+  Widget _buildContent(Color color) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        if (icon != null) ...[
+          IconTheme(data: IconThemeData(color: color), child: icon!),
+          const SizedBox(width: 12),
+        ],
+        Text(
+          text,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 0.5,
+            color: color,
+          ),
         ),
-      ),
+      ],
     );
   }
 }

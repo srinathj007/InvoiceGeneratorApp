@@ -34,18 +34,92 @@ class InvoiceService {
     await _supabase.from('invoice_items').insert(itemsData);
   }
 
+  Future<void> updateInvoice(Invoice invoice, List<InvoiceItem> items) async {
+    final user = _supabase.auth.currentUser;
+    if (user == null) throw Exception('User not authenticated');
+    if (invoice.id == null) throw Exception('Invoice ID required for update');
+
+    // 1. Update Invoice
+    final invoiceData = invoice.toJson();
+    invoiceData['user_id'] = user.id;
+    // Remove ID from data to avoid update error if DB handles it, though usually fine.
+    // However, we are targeting by ID, so we don't need to set it in body if we use .eq
+    
+    await _supabase
+        .from('invoices')
+        .update(invoiceData)
+        .eq('id', invoice.id!);
+
+    // 2. Update Items (Delete all and re-insert)
+    // First, delete existing items
+    await _supabase
+        .from('invoice_items')
+        .delete()
+        .eq('invoice_id', invoice.id!);
+
+    // Then insert new items
+    final List<Map<String, dynamic>> itemsData = items.map((item) {
+      final data = item.toJson();
+      data['invoice_id'] = invoice.id;
+      // Remove item ID if it exists to ensure new IDs are generated or handled by DB
+      data.remove('id'); 
+      return data;
+    }).toList();
+
+    if (itemsData.isNotEmpty) {
+      await _supabase.from('invoice_items').insert(itemsData);
+    }
+  }
+
+  Future<void> deleteInvoice(String invoiceId) async {
+    final user = _supabase.auth.currentUser;
+    if (user == null) throw Exception('User not authenticated');
+
+    // Items should be deleted via cascade if configured in DB, 
+    // but to be safe/explicit we can delete them or rely on DB constraint.
+    // Assuming cascade delete is set up on foreign key. If not, we should delete items first.
+    // Let's assume standard cascade or delete items first.
+    
+    await _supabase
+        .from('invoices')
+        .delete()
+        .eq('id', invoiceId)
+        .eq('user_id', user.id); // Security check
+  }
+
+  Future<Invoice?> getInvoiceById(String id) async {
+    try {
+      final response = await _supabase
+          .from('invoices')
+          .select('*, invoice_items(*)') // Join items
+          .eq('id', id)
+          .single();
+      
+      final itemsJson = (response['invoice_items'] as List);
+      final items = itemsJson.map((i) => InvoiceItem.fromJson(i)).toList();
+      
+      return Invoice.fromJson(response, items);
+    } catch (e) {
+      return null;
+    }
+  }
+
   Future<List<Invoice>> getRecentInvoices() async {
     final user = _supabase.auth.currentUser;
     if (user == null) return [];
 
     final response = await _supabase
         .from('invoices')
-        .select()
+        .select('*, invoice_items(*)')
         .eq('user_id', user.id)
         .order('created_at', ascending: false)
         .limit(10);
 
-    return (response as List).map((json) => Invoice.fromJson(json)).toList();
+    return (response as List).map((json) {
+      final itemsJson = (json['invoice_items'] as List?) ?? [];
+      final items = itemsJson.map((i) => InvoiceItem.fromJson(i)).toList();
+      return Invoice.fromJson(json, items);
+    }).toList();
   }
 
   Future<List<Invoice>> getInvoices({
@@ -97,7 +171,37 @@ class InvoiceService {
     final end = start + pageSize - 1;
     query = query.range(start, end);
 
+    final response = await query.select('*, invoice_items(*)');
+    return (response as List).map((json) {
+      final itemsJson = (json['invoice_items'] as List?) ?? [];
+      final items = itemsJson.map((i) => InvoiceItem.fromJson(i)).toList();
+      return Invoice.fromJson(json, items);
+    }).toList();
+  }
+
+  Future<double> getTotalRevenue({DateTime? startDate, DateTime? endDate}) async {
+    final user = _supabase.auth.currentUser;
+    if (user == null) return 0;
+
+    var query = _supabase
+        .from('invoices')
+        .select('total_amount')
+        .eq('user_id', user.id);
+
+    if (startDate != null) {
+      query = query.gte('invoice_date', startDate.toIso8601String().split('T')[0]);
+    }
+    if (endDate != null) {
+      query = query.lte('invoice_date', endDate.toIso8601String().split('T')[0]);
+    }
+
     final response = await query;
-    return (response as List).map((json) => Invoice.fromJson(json)).toList();
+    final List data = (response as List?) ?? [];
+    
+    return data.fold<double>(0.0, (sum, item) {
+      final val = item['total_amount'];
+      if (val == null) return sum;
+      return sum + (val as num).toDouble();
+    });
   }
 }

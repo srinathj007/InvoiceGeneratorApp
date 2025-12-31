@@ -2,132 +2,138 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  static const Color primaryColor = Color(0xFF1E88E5); // Vibrant Blue
-  static const Color secondaryColor = Color(0xFF00C853); // Emerald Green
-  static const Color backgroundColor = Color(0xFFF8F9FA); // Off-White
-  static const Color surfaceColor = Colors.white;
+  // Using a professional Blue-Grey base for a modern enterprise look
+  static const Color seedColor = Color(0xFF2563EB); 
 
   static ThemeData get lightTheme {
+    final colorScheme = ColorScheme.fromSeed(
+      seedColor: seedColor,
+      brightness: Brightness.light,
+      surface: const Color(0xFFF3F4F6), // Cool gray surface
+    );
+
     return ThemeData(
       useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: primaryColor,
-        primary: primaryColor,
-        secondary: secondaryColor,
-        surface: surfaceColor,
-        brightness: Brightness.light,
+      colorScheme: colorScheme,
+      scaffoldBackgroundColor: const Color(0xFFF3F4F6),
+      textTheme: GoogleFonts.outfitTextTheme(ThemeData.light().textTheme).apply(
+        bodyColor: const Color(0xFF1F2937),
+        displayColor: const Color(0xFF111827),
       ),
-      scaffoldBackgroundColor: backgroundColor,
-      textTheme: GoogleFonts.outfitTextTheme(ThemeData.light().textTheme),
+      
+      // Card Theme - Clean, subtle elevation
+      cardTheme: const CardThemeData(
+        color: Colors.white,
+        elevation: 0,
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(16)),
+          side: BorderSide(color: Color(0x0D000000)), // 5% black
+        ),
+      ),
+
+      // Input Decoration - Modern Outlined
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.black.withAlpha(8),
+        fillColor: Colors.white,
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0x1A000000)), // 10% black
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: Colors.black.withAlpha(13)),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0x1A000000)),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: primaryColor, width: 2),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: colorScheme.primary, width: 2),
         ),
-        hintStyle: TextStyle(color: Colors.black.withAlpha(102), fontSize: 14),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: colorScheme.error),
+        ),
+        hintStyle: const TextStyle(color: Color(0x66000000)), // 40% black
+      ),
+
+      // AppBar Theme
+      appBarTheme: AppBarTheme(
+        backgroundColor: const Color(0xFFF3F4F6),
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: false,
+        titleTextStyle: GoogleFonts.outfit(
+          color: const Color(0xFF111827),
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+        ),
+        iconTheme: const IconThemeData(color: Color(0xFF1F2937)),
+      ),
+
+      // Button Themes
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          backgroundColor: colorScheme.primary,
+          foregroundColor: colorScheme.onPrimary,
+          textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          side: BorderSide(color: colorScheme.outline),
+        ),
+      ),
+      
+      // Floating Action Button
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: colorScheme.primaryContainer,
+        foregroundColor: colorScheme.onPrimaryContainer,
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
     );
   }
 
-  static BoxDecoration glassDecoration({double blur = 20, double opacity = 0.7}) {
-    return BoxDecoration(
-      color: Colors.white.withAlpha((opacity * 255).toInt()),
-      borderRadius: BorderRadius.circular(24),
-      border: Border.all(color: Colors.white.withAlpha(150)),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withAlpha(20),
-          blurRadius: 30,
-          offset: const Offset(0, 10),
-        ),
-      ],
-    );
-  }
-
-  static List<BoxShadow> get premiumShadows => [
-        BoxShadow(
-          color: primaryColor.withAlpha(60),
-          blurRadius: 20,
-          offset: const Offset(0, 8),
-        ),
-      ];
-
-  static InputDecoration inputDecoration({required String hint, IconData? prefixIcon}) {
-    return InputDecoration(
-      hintText: hint,
-      prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: Colors.black54) : null,
-      filled: true,
-      fillColor: Colors.black.withAlpha(8),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide.none,
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide(color: Colors.black.withAlpha(13)),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: primaryColor, width: 2),
-      ),
-      hintStyle: TextStyle(color: Colors.black.withAlpha(102), fontSize: 14),
-    );
-  }
-
+  // Toast Helper
   static void showToast(BuildContext context, String message, {bool isError = false}) {
     if (!context.mounted) return;
 
     ScaffoldMessenger.of(context).clearSnackBars();
     
-    final mediaQuery = MediaQuery.maybeOf(context);
-    if (mediaQuery == null) return;
-
-    final maxWidth = mediaQuery.size.width;
-    // Ensure width is at least a small positive value
-    final toastWidth = (maxWidth > 600 ? 400.0 : maxWidth * 0.9).clamp(100.0, 400.0);
+    final colorScheme = Theme.of(context).colorScheme;
+    final mediaQuery = MediaQuery.of(context);
+    final isDesktop = mediaQuery.size.width > 600;
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Directionality(
-          textDirection: TextDirection.ltr,
-          child: Row(
-            children: [
-              Icon(
-                isError ? Icons.error_outline : Icons.check_circle_outline,
-                color: Colors.white,
-                size: 20,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  message,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                  ),
+        content: Row(
+          children: [
+            Icon(
+              isError ? Icons.error_outline : Icons.check_circle_outline,
+              color: isError ? colorScheme.onErrorContainer : colorScheme.onPrimaryContainer,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                message,
+                style: TextStyle(
+                  color: isError ? colorScheme.onErrorContainer : colorScheme.onPrimaryContainer,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-        backgroundColor: isError ? const Color(0xFFEF5350) : const Color(0xFF66BB6A),
+        backgroundColor: isError ? colorScheme.errorContainer : colorScheme.primaryContainer,
         behavior: SnackBarBehavior.floating,
-        width: toastWidth,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        elevation: 10,
+        width: isDesktop ? 400 : null,
+        margin: isDesktop ? null : const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         duration: const Duration(seconds: 4),
       ),
     );

@@ -58,115 +58,76 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   }
 
   Widget _buildResetForm() {
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
+    return Padding(
+      padding: const EdgeInsets.all(24.0),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _animate(
-            delay: 100,
+          Center(
             child: Container(
               height: 64,
               width: 64,
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor,
-                borderRadius: BorderRadius.circular(18),
-                boxShadow: AppTheme.premiumShadows,
+                color: Theme.of(context).colorScheme.primary,
+                borderRadius: BorderRadius.circular(16),
               ),
               child: const Icon(Icons.lock_reset_outlined, color: Colors.white, size: 32),
             ),
           ),
           const SizedBox(height: 24),
-          _animate(
-            delay: 200,
-            child: const Text(
-              'Reset Password',
-              style: TextStyle(
-                fontSize: 30,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1A1C1E),
-                letterSpacing: -0.5,
-              ),
+          Text(
+            'Reset Password',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
-          const SizedBox(height: 4),
-          _animate(
-            delay: 300,
-            child: Text(
-              'Enter your email to receive recovery instructions',
-              style: TextStyle(
-                fontSize: 15,
-                color: Colors.black.withAlpha(140),
-              ),
+          const SizedBox(height: 8),
+          Text(
+            'Enter your email to receive recovery instructions',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 32),
 
-          _animate(
-            delay: 400,
-            child: CustomTextField(
-              controller: _emailController,
-              label: 'Email Address',
-              hint: 'name@example.com',
-              prefixIcon: Icons.email_outlined,
-              keyboardType: TextInputType.emailAddress,
-            ),
+          CustomTextField(
+            controller: _emailController,
+            label: 'Email Address',
+            hint: 'name@example.com',
+            prefixIcon: Icons.email_outlined,
+            keyboardType: TextInputType.emailAddress,
           ),
           const SizedBox(height: 32),
-          _animate(
-            delay: 600,
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor))
-                : CustomButton(
-                    text: 'Send Reset Link',
-                    onPressed: _handleResetPassword,
-                  ),
-          ),
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : CustomButton(
+                  text: 'Send Reset Link',
+                  onPressed: _handleResetPassword,
+                ),
           
           const SizedBox(height: 32),
-          _animate(
-            delay: 800,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  "Remember your password? ",
-                  style: TextStyle(color: Colors.black.withAlpha(140)),
-                ),
-                GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: const Text(
-                    'Sign In',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.primaryColor,
-                    ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text("Remember your password? "),
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Text(
+                  'Sign In',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
       ),
-    );
-  }
-
-  Widget _animate({required Widget child, required int delay}) {
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0.0, end: 1.0),
-      duration: const Duration(milliseconds: 700),
-      curve: Interval(delay / 2000 > 1.0 ? 0.9 : delay / 2000, 1.0, curve: Curves.easeOutCubic),
-      builder: (context, value, child) {
-        return Opacity(
-          opacity: value,
-          child: Transform.translate(
-            offset: Offset(0, 20 * (1 - value)),
-            child: child,
-          ),
-        );
-      },
-      child: child,
     );
   }
 
@@ -175,40 +136,27 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _animate(
-            delay: 100,
-            child: Icon(
-              Icons.security_outlined,
-              size: 140,
-              color: AppTheme.primaryColor.withAlpha(200),
+          Icon(
+            Icons.security_outlined,
+            size: 140,
+            color: Theme.of(context).colorScheme.primary.withAlpha(200),
+          ),
+          const SizedBox(height: 32),
+          Text(
+            'Account Recovery',
+            style: Theme.of(context).textTheme.displaySmall?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
-          const SizedBox(height: 24),
-          _animate(
-            delay: 300,
-            child: const Text(
-              'Account Recovery',
-              style: TextStyle(
-                fontSize: 34,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1A1C1E),
-                letterSpacing: -1,
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          _animate(
-            delay: 500,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 50),
-              child: Text(
-                'Don\'t worry! It happens to the best of us. We\'ll help you get back to your dashboard in no time.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 17,
-                  color: Colors.black.withAlpha(140),
-                  height: 1.5,
-                ),
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 48),
+            child: Text(
+              'Don\'t worry! It happens to the best of us. We\'ll help you get back to your dashboard in no time.',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
           ),
@@ -221,20 +169,35 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: ResponsiveLayout(
-        mobile: SafeArea(
-          child: ConstrainedCenter(
-            maxWidth: 450,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: GlassContainer(
-                child: _buildResetForm(),
-              ),
+        mobile: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 400),
+              child: _buildResetForm(),
             ),
           ),
         ),
-        tablet: SplitLayout(
-          form: _buildResetForm(),
-          illustration: _buildIllustration(),
+        tablet: Row(
+          children: [
+            Expanded(
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(32),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 450),
+                    child: _buildResetForm(),
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Container(
+                color: Theme.of(context).colorScheme.surfaceContainerLow,
+                child: _buildIllustration(),
+              ),
+            ),
+          ],
         ),
       ),
     );
