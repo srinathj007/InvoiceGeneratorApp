@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:invoice_gen_app/l10n/app_localizations.dart';
 import '../core/theme.dart';
 import 'create_invoice_screen.dart';
 import 'login_screen.dart';
@@ -88,25 +89,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _handleLogout() async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Logout'),
-        content: const Text('Are you sure you want to log out?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+      builder: (context) {
+        final width = MediaQuery.of(context).size.width;
+        final isTablet = width >= 600 && width < 1200;
+        
+        return AlertDialog(
+          title: Text(l10n.logout),
+          content: Container(
+            width: isTablet ? width * 0.7 : null,
+            child: Text(l10n.logoutConfirmation),
           ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(l10n.cancel),
             ),
-            child: const Text('Logout'),
-          ),
-        ],
-      ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: FilledButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.error,
+              ),
+              child: Text(l10n.logout),
+            ),
+          ],
+        );
+      },
     );
 
     if (confirmed == true) {
@@ -129,6 +139,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final isDesktop = MediaQuery.of(context).size.width > 900;
     
     return Scaffold(
@@ -161,7 +172,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Welcome back,',
+                          '${l10n.welcomeBack},',
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: theme.colorScheme.onSurfaceVariant,
                           ),
@@ -236,7 +247,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  _isAnnualRevenue ? 'Annual Earnings' : 'Monthly Earnings',
+                                  _isAnnualRevenue ? l10n.annualEarnings : l10n.monthlyEarnings,
                                   style: TextStyle(
                                     color: Colors.white.withOpacity(0.9),
                                     fontSize: 14,
@@ -310,7 +321,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             Icon(Icons.trending_up, color: Colors.greenAccent[100], size: 16),
                             const SizedBox(width: 6),
                             Text(
-                              'Real-time data',
+                              l10n.realTimeData,
                               style: TextStyle(
                                 color: Colors.white.withOpacity(0.8),
                                 fontSize: 12,
@@ -334,7 +345,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Expanded(
                     child: _buildActionButton(
                       context,
-                      'New Invoice',
+                      l10n.newInvoice,
                       Icons.add,
                       theme.colorScheme.primary,
                       () async {
@@ -353,7 +364,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Expanded(
                     child: _buildActionButton(
                       context,
-                      'Clients',
+                      l10n.clients,
                       Icons.people_alt_outlined,
                       Colors.purple,
                       () {
@@ -374,7 +385,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Recent Activity',
+                    l10n.recentActivity,
                     style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                   ),
                 ],
@@ -388,7 +399,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: _isLoading 
                 ? const Center(child: CircularProgressIndicator())
                 : _recentInvoices.isEmpty 
-                  ? Center(child: Text('No recent invoices', style: TextStyle(color: theme.colorScheme.onSurfaceVariant)))
+                  ? Center(child: Text(l10n.noRecentInvoices, style: TextStyle(color: theme.colorScheme.onSurfaceVariant)))
                   : ListView.separated(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       itemCount: _recentInvoices.length,
@@ -504,89 +515,98 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> _showInvoiceDetailsDialog(Invoice invoice) async {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     
     await showDialog(
       context: context,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      builder: (context) {
+        final width = MediaQuery.of(context).size.width;
+        final isTablet = width >= 600 && width < 1200;
+        
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          child: Container(
+            width: isTablet ? width * 0.7 : null,
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                   Text(
-                    'Invoice Details',
-                    style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                       Text(
+                        l10n.invoiceDetails,
+                        style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.close),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
                   ),
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
+                  const SizedBox(height: 16),
+                  
+                  _buildDetailRow(theme, 'Invoice No', invoice.invoiceNumber),
+                  _buildDetailRow(theme, 'Customer', invoice.customerName),
+                  _buildDetailRow(theme, 'Date', DateFormat('dd MMM yyyy').format(invoice.date)),
+                  _buildDetailRow(theme, 'Amount', '₹${invoice.totalAmount.toStringAsFixed(2)}', isBold: true),
+                  
+                  const SizedBox(height: 24),
+                  
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            _confirmDelete(invoice);
+                          },
+                          icon: const Icon(Icons.delete_outline, size: 20),
+                          label: Text(l10n.delete),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: theme.colorScheme.error,
+                            side: BorderSide(color: theme.colorScheme.error),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: FilledButton.icon(
+                          onPressed: () {
+                            Navigator.pop(context); // Close dialog first
+                            _navigateToEdit(invoice);
+                          },
+                          icon: const Icon(Icons.edit_outlined, size: 20),
+                          label: Text(l10n.edit),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              
-              _buildDetailRow(theme, 'Invoice No', invoice.invoiceNumber),
-              _buildDetailRow(theme, 'Customer', invoice.customerName),
-              _buildDetailRow(theme, 'Date', DateFormat('dd MMM yyyy').format(invoice.date)),
-              _buildDetailRow(theme, 'Amount', '₹${invoice.totalAmount.toStringAsFixed(2)}', isBold: true),
-              
-              const SizedBox(height: 24),
-              
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.tonalIcon(
                       onPressed: () {
                         Navigator.pop(context);
-                        _confirmDelete(invoice);
-                      },
-                      icon: const Icon(Icons.delete_outline, size: 20),
-                      label: const Text('Delete'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: theme.colorScheme.error,
-                        side: BorderSide(color: theme.colorScheme.error),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: FilledButton.icon(
-                      onPressed: () {
-                        Navigator.pop(context); // Close dialog first
-                        _navigateToEdit(invoice);
-                      },
-                      icon: const Icon(Icons.edit_outlined, size: 20),
-                      label: const Text('Edit'),
+                        Navigator.push(
+                          context, 
+                          MaterialPageRoute(builder: (_) => InvoiceDetailScreen(invoice: invoice))
+                        ).then((_) => _loadData());
+                      }, 
+                      icon: const Icon(Icons.visibility_outlined),
+                      label: Text(l10n.viewAndPrint),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.tonalIcon(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context, 
-                      MaterialPageRoute(builder: (_) => InvoiceDetailScreen(invoice: invoice))
-                    ).then((_) => _loadData());
-                  }, 
-                  icon: const Icon(Icons.visibility_outlined),
-                  label: const Text('View Full Invoice & Print'),
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -610,6 +630,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _confirmDelete(Invoice invoice) async {
+    final l10n = AppLocalizations.of(context)!;
     if (invoice.id == null) {
       if (mounted) AppTheme.showToast(context, 'Cannot delete: Invoice ID missing', isError: true);
       return;
@@ -617,25 +638,33 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Invoice'),
-        content: Text('Delete Invoice #${invoice.invoiceNumber}?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.error),
-            child: const Text('Delete'),
+      builder: (context) {
+        final width = MediaQuery.of(context).size.width;
+        final isTablet = width >= 600 && width < 1200;
+        
+        return AlertDialog(
+          title: Text(l10n.deleteInvoice),
+          content: Container(
+            width: isTablet ? width * 0.7 : null,
+            child: Text(l10n.deleteConfirmation(invoice.invoiceNumber)),
           ),
-        ],
-      ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l10n.cancel)),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: FilledButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.error),
+              child: Text(l10n.delete),
+            ),
+          ],
+        );
+      },
     );
 
     if (confirmed == true) {
       try {
         await _invoiceService.deleteInvoice(invoice.id!);
         if (mounted) {
-          AppTheme.showToast(context, 'Deleted successfully');
+          AppTheme.showToast(context, l10n.deleteSuccess);
           // Add small delay to allow database to propagate the delete
           await Future.delayed(const Duration(milliseconds: 300));
           await _loadData(); // Refresh list

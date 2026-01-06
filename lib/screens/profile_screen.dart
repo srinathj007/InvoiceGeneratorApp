@@ -7,6 +7,7 @@ import '../services/supabase_service.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/responsive_layout.dart';
+import 'package:invoice_gen_app/l10n/app_localizations.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -71,7 +72,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
     } catch (e) {
       if (mounted) {
-        AppTheme.showToast(context, 'Error loading profile', isError: true);
+        final l10n = AppLocalizations.of(context)!;
+        AppTheme.showToast(context, l10n.errorLoadingProfile, isError: true);
       }
     } finally {
       if (mounted) {
@@ -81,8 +83,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _handleSave() async {
+    final l10n = AppLocalizations.of(context)!;
     if (_nameController.text.isEmpty) {
-      AppTheme.showToast(context, 'Business Name is required', isError: true);
+      AppTheme.showToast(context, l10n.businessNameRequired, isError: true);
       return;
     }
 
@@ -90,7 +93,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       final userId = _authService.currentUserId;
       if (userId == null) {
-        AppTheme.showToast(context, 'User session expired', isError: true);
+        AppTheme.showToast(context, l10n.userSessionExpired, isError: true);
         return;
       }
       final newProfile = BusinessProfile(
@@ -113,11 +116,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       await _profileService.saveProfile(newProfile);
       if (mounted) {
-        AppTheme.showToast(context, 'Profile saved successfully');
+        AppTheme.showToast(context, l10n.profileSaved);
       }
     } catch (e) {
       if (mounted) {
-        AppTheme.showToast(context, 'Error saving profile', isError: true);
+        AppTheme.showToast(context, l10n.errorSaving, isError: true);
       }
     } finally {
       if (mounted) {
@@ -127,6 +130,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _pickAndUpload(String type, String currentUrl) async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       final XFile? image = await _picker.pickImage(
         source: ImageSource.gallery,
@@ -140,7 +144,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final extension = image.path.split('.').last;
       final fileName = '${type}_${DateTime.now().millisecondsSinceEpoch}.$extension';
 
-      if (mounted) AppTheme.showToast(context, 'Uploading $type...');
+      if (mounted) AppTheme.showToast(context, '${l10n.uploading} $type...');
 
       final url = await _profileService.uploadImage(fileName, bytes);
 
@@ -155,67 +159,68 @@ class _ProfileScreenState extends State<ProfileScreen> {
             case 'custom4': _customLogo4Url = url; break;
           }
         });
-        AppTheme.showToast(context, '$type uploaded successfully');
+        AppTheme.showToast(context, '$type ${l10n.uploadedSuccess}');
       }
     } catch (e) {
-      if (mounted) AppTheme.showToast(context, 'Error uploading image', isError: true);
+      if (mounted) AppTheme.showToast(context, l10n.errorUploadingImage, isError: true);
     }
   }
 
   Widget _buildProfileForm() {
+    final l10n = AppLocalizations.of(context)!;
     // Remove Card, use direct Column on Surface
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const SizedBox(height: 16),
         
-        _buildSectionHeader('Business Info'),
+        _buildSectionHeader(l10n.businessInfo),
         const SizedBox(height: 16),
-        _buildImagePickerItem('Company Logo', _logoUrl, 'logo'),
+        _buildImagePickerItem(l10n.companyLogo, _logoUrl, 'logo'),
         const SizedBox(height: 20),
         CustomTextField(
           controller: _nameController,
-          label: 'Business Name',
-          hint: 'e.g. Srinath Motors',
+          label: l10n.businessName,
+          hint: l10n.enterBusinessName,
           prefixIcon: Icons.storefront_outlined,
         ),
         CustomTextField(
           controller: _proprietorController,
-          label: 'Proprietor Name',
-          hint: 'e.g. Srinath',
+          label: l10n.proprietorName,
+          hint: l10n.enterProprietorName,
           prefixIcon: Icons.person_outline,
         ),
         const SizedBox(height: 20),
         CustomTextField(
           controller: _gstinController,
-          label: 'GSTIN',
-          hint: 'e.g. 36BXKPG2180H1ZH',
+          label: l10n.gstin,
+          hint: l10n.enterGstin,
           prefixIcon: Icons.assignment_ind_outlined,
         ),
         const SizedBox(height: 32),
-        _buildSectionHeader('Custom Fields'),
+        _buildSectionHeader(l10n.customFields),
         const SizedBox(height: 16),
         CustomTextField(
           controller: _customFieldLabelController,
-          label: 'Custom Field Label',
-          hint: 'e.g. Reference No, Order ID, Vehicle No',
+          label: l10n.customFieldLabel,
+          hint: l10n.enterCustomFieldLabel,
           prefixIcon: Icons.label_outline,
         ),
         const SizedBox(height: 20),
         CustomTextField(
           controller: _customFieldPlaceholderController,
-          label: 'Custom Field Placeholder',
-          hint: 'e.g. Enter reference or vehicle number',
+          label: l10n.customFieldPlaceholder,
+          hint: l10n.enterCustomFieldPlaceholder,
           prefixIcon: Icons.short_text,
         ),
         
         const SizedBox(height: 32),
-        _buildSectionHeader('Business Assets'),
+        _buildSectionHeader(l10n.businessAssets),
         const SizedBox(height: 16),
-        _buildImagePickerItem('Proprietor Signature', _signatureUrl, 'signature'),
+        _buildImagePickerItem(l10n.proprietorSignature, _signatureUrl, 'signature'),
         const SizedBox(height: 24),
         Text(
-          'Companion Logos',
+          l10n.companionLogos,
           style: Theme.of(context).textTheme.labelLarge?.copyWith(
             fontWeight: FontWeight.bold,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -224,35 +229,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
         const SizedBox(height: 12),
         Row(
           children: [
-            Expanded(child: _buildImagePickerItem('Custom Logo 1', _customLogo1Url, 'custom1', compact: true)),
+            Expanded(child: _buildImagePickerItem('${l10n.companyLogo} 1', _customLogo1Url, 'custom1', compact: true)),
             const SizedBox(width: 12),
-            Expanded(child: _buildImagePickerItem('Custom Logo 2', _customLogo2Url, 'custom2', compact: true)),
+            Expanded(child: _buildImagePickerItem('${l10n.companyLogo} 2', _customLogo2Url, 'custom2', compact: true)),
           ],
         ),
         const SizedBox(height: 12),
         Row(
           children: [
-            Expanded(child: _buildImagePickerItem('Custom Logo 3', _customLogo3Url, 'custom3', compact: true)),
+            Expanded(child: _buildImagePickerItem('${l10n.companyLogo} 3', _customLogo3Url, 'custom3', compact: true)),
             const SizedBox(width: 12),
-            Expanded(child: _buildImagePickerItem('Custom Logo 4', _customLogo4Url, 'custom4', compact: true)),
+            Expanded(child: _buildImagePickerItem('${l10n.companyLogo} 4', _customLogo4Url, 'custom4', compact: true)),
           ],
         ),
         
         const SizedBox(height: 32),
-        _buildSectionHeader('Contact Details'),
+        _buildSectionHeader(l10n.contactDetails),
         const SizedBox(height: 16),
         CustomTextField(
           controller: _phoneController,
-          label: 'Contact Numbers',
-          hint: 'e.g. 9010123456, 7777123456',
+          label: l10n.contactNumbers,
+          hint: l10n.enterContactNumbers,
           prefixIcon: Icons.phone_outlined,
           keyboardType: TextInputType.phone,
         ),
         const SizedBox(height: 20),
         CustomTextField(
           controller: _addressController,
-          label: 'Business Address',
-          hint: 'Enter full address...',
+          label: l10n.businessAddress,
+          hint: l10n.enterBusinessAddress,
           prefixIcon: Icons.location_on_outlined,
         ),
         
@@ -260,7 +265,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _isSaving
             ? const Center(child: CircularProgressIndicator())
             : CustomButton(
-                text: 'Save Business Profile',
+                text: l10n.saveBusinessProfile,
                 onPressed: _handleSave,
               ),
         const SizedBox(height: 24),
@@ -346,9 +351,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile Settings'),
+        title: Text(l10n.profileSettings),
         titleTextStyle: Theme.of(context).textTheme.headlineSmall?.copyWith(
           fontWeight: FontWeight.bold,
           color: Theme.of(context).colorScheme.onSurface,

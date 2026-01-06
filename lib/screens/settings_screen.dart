@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:invoice_gen_app/l10n/app_localizations.dart';
 import '../services/supabase_service.dart';
 import '../services/profile_service.dart';
 import '../models/business_profile.dart';
 import 'profile_screen.dart';
 import 'login_screen.dart';
 import '../core/theme.dart';
+import '../main.dart'; // Access localeProvider
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -40,25 +42,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _handleLogout() async {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Logout'),
-        content: const Text('Are you sure you want to log out?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+      builder: (context) {
+        final width = MediaQuery.of(context).size.width;
+        final isTablet = width >= 600 && width < 1200;
+
+        return AlertDialog(
+          title: Text(l10n.logout),
+          content: Container(
+            width: isTablet ? width * 0.7 : null,
+            child: Text(l10n.logoutConfirmation),
           ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: theme.colorScheme.error,
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(l10n.cancel),
             ),
-            child: const Text('Logout'),
-          ),
-        ],
-      ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: FilledButton.styleFrom(
+                backgroundColor: theme.colorScheme.error,
+              ),
+              child: Text(l10n.logout),
+            ),
+          ],
+        );
+      },
     );
 
     if (confirmed == true) {
@@ -82,11 +94,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: Text(l10n.settings),
         backgroundColor: theme.colorScheme.surface,
         surfaceTintColor: Colors.transparent,
       ),
@@ -136,6 +149,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ],
                   const SizedBox(height: 24),
+                  
+                  // Language Selector
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surfaceContainerLow,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: theme.colorScheme.outlineVariant.withOpacity(0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.language, color: theme.colorScheme.primary),
+                        const SizedBox(width: 12),
+                        Text(l10n.language, style: theme.textTheme.bodyMedium),
+                        const Spacer(),
+                        DropdownButton<Locale>(
+                          value: localeProvider.locale,
+                          underline: const SizedBox(),
+                          items: const [
+                            DropdownMenuItem(value: Locale('en'), child: Text('English')),
+                            DropdownMenuItem(value: Locale('te'), child: Text('Telugu')),
+                            DropdownMenuItem(value: Locale('hi'), child: Text('Hindi')),
+                          ], 
+                          onChanged: (val) {
+                            if (val != null) {
+                              localeProvider.setLocale(val);
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
 
                   // 4. Phone Numbers & Address (Info Section)
                   Container(
@@ -176,7 +223,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                             foregroundColor: theme.colorScheme.primary,
                           ),
-                          child: const Text('Edit Profile', style: TextStyle(fontWeight: FontWeight.bold)),
+                          child: Text(l10n.editProfile, style: const TextStyle(fontWeight: FontWeight.bold)),
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -190,7 +237,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                             elevation: 0,
                           ),
-                          child: const Text('Log Out', style: TextStyle(fontWeight: FontWeight.bold)),
+                          child: Text(l10n.logout, style: const TextStyle(fontWeight: FontWeight.bold)),
                         ),
                       ),
                     ],

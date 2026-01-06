@@ -7,6 +7,7 @@ import '../widgets/responsive_layout.dart';
 import '../widgets/invoice_filter_sidebar.dart';
 import 'create_invoice_screen.dart'; // For navigation to create
 import 'invoice_detail_screen.dart';
+import 'package:invoice_gen_app/l10n/app_localizations.dart';
 
 class ViewInvoicesScreen extends StatefulWidget {
   const ViewInvoicesScreen({super.key});
@@ -92,8 +93,9 @@ class _ViewInvoicesScreenState extends State<ViewInvoicesScreen> {
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         setState(() => _isLoading = false);
-        AppTheme.showToast(context, 'Error loading invoices: $e', isError: true);
+        AppTheme.showToast(context, '${l10n.errorLoadingInvoices}: $e', isError: true);
       }
     }
   }
@@ -121,6 +123,7 @@ class _ViewInvoicesScreenState extends State<ViewInvoicesScreen> {
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 600;
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     // Sidebar for Tablet/Desktop
     Widget? sidebar = !isMobile 
@@ -140,8 +143,8 @@ class _ViewInvoicesScreenState extends State<ViewInvoicesScreen> {
             ? TextField(
                 controller: _searchController,
                 autofocus: true,
-                decoration: const InputDecoration(
-                  hintText: 'Search customer, invoice, details...',
+                decoration: InputDecoration(
+                  hintText: l10n.searchPlaceholder,
                   border: InputBorder.none,
                 ),
                 onChanged: (value) {
@@ -149,7 +152,7 @@ class _ViewInvoicesScreenState extends State<ViewInvoicesScreen> {
                   _fetchInvoices(refresh: true);
                 },
               )
-            : const Text('Invoices'),
+            : Text(l10n.invoices),
         actions: [
           IconButton(
             icon: Icon(_isSearching ? Icons.close : Icons.search),
@@ -176,11 +179,11 @@ class _ViewInvoicesScreenState extends State<ViewInvoicesScreen> {
               });
             },
             itemBuilder: (context) => [
-              const PopupMenuItem(value: 'created_at_desc', child: Text('Newest First')),
-              const PopupMenuItem(value: 'created_at_asc', child: Text('Oldest First')),
-              const PopupMenuItem(value: 'total_amount_desc', child: Text('Highest Amount')),
-              const PopupMenuItem(value: 'total_amount_asc', child: Text('Lowest Amount')),
-              const PopupMenuItem(value: 'customer_name_asc', child: Text('Customer A-Z')),
+              PopupMenuItem(value: 'created_at_desc', child: Text(l10n.newestFirst)),
+              PopupMenuItem(value: 'created_at_asc', child: Text(l10n.oldestFirst)),
+              PopupMenuItem(value: 'total_amount_desc', child: Text(l10n.highestAmount)),
+              PopupMenuItem(value: 'total_amount_asc', child: Text(l10n.lowestAmount)),
+              PopupMenuItem(value: 'customer_name_asc', child: Text(l10n.customerAZ)),
             ],
           ),
         ],
@@ -201,7 +204,7 @@ class _ViewInvoicesScreenState extends State<ViewInvoicesScreen> {
           });
         },
         icon: const Icon(Icons.add),
-        label: const Text('New Invoice'),
+        label: Text(l10n.newInvoice),
       ),
       body: Row(
         children: [
@@ -216,6 +219,7 @@ class _ViewInvoicesScreenState extends State<ViewInvoicesScreen> {
   }
 
   Widget _buildList() {
+    final l10n = AppLocalizations.of(context)!;
     if (_invoices.isEmpty && !_isLoading) {
       return Center(
         child: Column(
@@ -231,14 +235,14 @@ class _ViewInvoicesScreenState extends State<ViewInvoicesScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'No invoices found',
+              l10n.noInvoicesFound,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: Theme.of(context).colorScheme.onSurface,
                 fontWeight: FontWeight.bold,
               ),
             ),
             Text(
-              'Create a new invoice to get started',
+              l10n.startCreatingInvoice,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),

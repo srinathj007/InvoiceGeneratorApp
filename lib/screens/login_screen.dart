@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:invoice_gen_app/l10n/app_localizations.dart';
 import '../core/theme.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
@@ -75,6 +76,8 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildLoginForm() {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Padding(
       padding: const EdgeInsets.all(24.0),
       child: Column(
@@ -94,7 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           const SizedBox(height: 24),
           Text(
-            'Welcome Back',
+            l10n.welcomeBack,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.bold,
@@ -103,7 +106,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Sign in to your portfolio',
+            l10n.signInToPortfolio,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -113,16 +116,16 @@ class _LoginScreenState extends State<LoginScreen> {
 
           CustomTextField(
             controller: _emailController,
-            label: 'Email Address',
-            hint: 'name@example.com',
+            label: l10n.emailAddress,
+            hint: l10n.enterEmail,
             prefixIcon: Icons.email_outlined,
             keyboardType: TextInputType.emailAddress,
           ),
           const SizedBox(height: 16),
           CustomTextField(
             controller: _passwordController,
-            label: 'Password',
-            hint: 'Enter your password',
+            label: l10n.password,
+            hint: l10n.enterPassword,
             prefixIcon: Icons.lock_outline,
             isPassword: true,
           ),
@@ -137,7 +140,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 );
               },
               child: Text(
-                'Forgot Password?',
+                l10n.forgotPassword,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Theme.of(context).colorScheme.primary,
@@ -150,52 +153,22 @@ class _LoginScreenState extends State<LoginScreen> {
           _isLoading
               ? const Center(child: CircularProgressIndicator())
               : CustomButton(
-                  text: 'Sign In',
+                  text: l10n.signIn,
                   onPressed: _handleSignIn,
                 ),
           
           const SizedBox(height: 24),
-           Row(
-             children: [
-               Expanded(child: Divider(color: Theme.of(context).dividerColor)),
-               Padding(
-                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                 child: Text(
-                   'Or continue with',
-                   style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13),
-                 ),
-               ),
-               Expanded(child: Divider(color: Theme.of(context).dividerColor)),
-             ],
-           ),
+
+
            
-           const SizedBox(height: 24),
-           Row(
-             children: [
-               Expanded(
-                 child: SocialButton(
-                   text: 'Google',
-                   icon: const Icon(Icons.g_mobiledata, size: 32, color: Color(0xFF4285F4)),
-                   onPressed: () {},
-                 ),
-               ),
-               const SizedBox(width: 16),
-               Expanded(
-                 child: SocialButton(
-                   text: 'Phone',
-                   icon: Icon(Icons.phone_android, size: 20, color: Theme.of(context).colorScheme.primary),
-                   onPressed: () {},
-                 ),
-               ),
-             ],
-           ),
+
 
           const SizedBox(height: 32),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                "Don't have an account? ",
+                l10n.dontHaveAccount,
                 style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
               ),
               GestureDetector(
@@ -206,7 +179,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   );
                 },
                 child: Text(
-                  'Sign Up',
+                  l10n.signUp,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).colorScheme.primary,
@@ -221,6 +194,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildIllustration() {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -232,7 +206,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           const SizedBox(height: 24),
           Text(
-            'Secure Finance',
+            l10n.secureFinance,
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.bold,
               color: Theme.of(context).colorScheme.onSurface,
@@ -242,7 +216,7 @@ class _LoginScreenState extends State<LoginScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 50),
             child: Text(
-              'Experience your wealth grow in a safe and high-motion digital environment.',
+              l10n.secureFinanceDesc,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,

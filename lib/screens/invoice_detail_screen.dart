@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:printing/printing.dart';
 import 'package:pdf/pdf.dart';
+import 'package:invoice_gen_app/l10n/app_localizations.dart';
 import '../models/invoice.dart';
 import '../models/business_profile.dart';
 import '../services/pdf_service.dart';
@@ -46,25 +47,34 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
   }
 
   Future<void> _handleDelete() async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Invoice'),
-        content: Text('Are you sure you want to delete Invoice #${_invoice.invoiceNumber}? This action cannot be undone.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+      builder: (context) {
+        final width = MediaQuery.of(context).size.width;
+        final isTablet = width >= 600 && width < 1200;
+
+        return AlertDialog(
+          title: Text(l10n.deleteInvoice),
+          content: Container(
+            width: isTablet ? width * 0.7 : null,
+            child: Text(l10n.deleteConfirmation(_invoice.invoiceNumber)),
           ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(l10n.cancel),
             ),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: FilledButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.error,
+              ),
+              child: Text(l10n.delete),
+            ),
+          ],
+        );
+      },
     );
 
     if (confirmed == true) {
@@ -73,7 +83,7 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
         if (_invoice.id != null) {
           await _invoiceService.deleteInvoice(_invoice.id!);
           if (mounted) {
-            AppTheme.showToast(context, 'Invoice deleted successfully');
+            AppTheme.showToast(context, l10n.deleteSuccess);
             Navigator.pop(context, true); // Return true to indicate change
           }
         }
@@ -93,6 +103,7 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
     }
 
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
@@ -112,7 +123,7 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
                 );
               }
             },
-            tooltip: 'Share PDF',
+            tooltip: l10n.sharePdf,
           ),
           IconButton(
             icon: const Icon(Icons.print_outlined),
@@ -126,7 +137,7 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
                 );
               }
             },
-            tooltip: 'Print Invoice',
+            tooltip: l10n.printInvoice,
           ),
           const SizedBox(width: 8),
         ],
@@ -179,6 +190,7 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
   }
 
   Widget _buildModernPreview(ThemeData theme) {
+    final l10n = AppLocalizations.of(context)!;
     return Card(
       elevation: 4,
       shadowColor: Colors.black12,
@@ -335,10 +347,10 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
               ),
               child: Row(
                 children: [
-                  Expanded(flex: 3, child: Text('ITEM', style: _tableHeaderStyle(theme))),
-                  Expanded(child: Text('QTY', style: _tableHeaderStyle(theme), textAlign: TextAlign.center)),
-                  Expanded(flex: 2, child: Text('PRICE', style: _tableHeaderStyle(theme), textAlign: TextAlign.right)),
-                  Expanded(flex: 2, child: Text('TOTAL', style: _tableHeaderStyle(theme), textAlign: TextAlign.right)),
+                  Expanded(flex: 3, child: Text(l10n.item, style: _tableHeaderStyle(theme))),
+                  Expanded(child: Text(l10n.qty, style: _tableHeaderStyle(theme), textAlign: TextAlign.center)),
+                  Expanded(flex: 2, child: Text(l10n.price, style: _tableHeaderStyle(theme), textAlign: TextAlign.right)),
+                  Expanded(flex: 2, child: Text(l10n.total, style: _tableHeaderStyle(theme), textAlign: TextAlign.right)),
                 ],
               ),
             ),
@@ -492,6 +504,7 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
   }
 
   Widget _buildBottomActions(ThemeData theme) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -506,7 +519,7 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
             child: OutlinedButton.icon(
               onPressed: _handleDelete,
               icon: const Icon(Icons.delete_outline),
-              label: const Text('Delete'),
+              label: Text(l10n.delete),
               style: OutlinedButton.styleFrom(
                 foregroundColor: theme.colorScheme.error,
                 side: BorderSide(color: theme.colorScheme.error),
@@ -525,7 +538,7 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
                 if (result == true) _refreshInvoice();
               },
               icon: const Icon(Icons.edit_outlined),
-              label: const Text('Edit'),
+              label: Text(l10n.edit),
               style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 12)),
             ),
           ),

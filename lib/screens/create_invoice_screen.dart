@@ -6,6 +6,7 @@ import '../models/business_profile.dart';
 import '../services/invoice_service.dart';
 import '../services/profile_service.dart';
 import '../services/supabase_service.dart';
+import 'package:invoice_gen_app/l10n/app_localizations.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/responsive_layout.dart';
@@ -144,12 +145,13 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
   }
 
   Future<void> _saveInvoice() async {
+    final l10n = AppLocalizations.of(context)!;
     if (_customerNameController.text.isEmpty) {
-      AppTheme.showToast(context, 'Customer Name is required', isError: true);
+      AppTheme.showToast(context, '${l10n.customerName} is required', isError: true);
       return;
     }
     if (_items.isEmpty) {
-      AppTheme.showToast(context, 'Please add at least one item', isError: true);
+      AppTheme.showToast(context, l10n.noItemsAdded, isError: true);
       return;
     }
 
@@ -175,10 +177,10 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
 
       if (widget.invoiceToEdit != null) {
         await _invoiceService.updateInvoice(invoice, _items);
-        if (mounted) AppTheme.showToast(context, 'Invoice updated successfully');
+        if (mounted) AppTheme.showToast(context, l10n.invoiceUpdated);
       } else {
         await _invoiceService.createInvoice(invoice, _items);
-        if (mounted) AppTheme.showToast(context, 'Invoice saved successfully');
+        if (mounted) AppTheme.showToast(context, l10n.invoiceSaved);
       }
 
       if (mounted) {
@@ -186,7 +188,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
       }
     } catch (e) {
       if (mounted) {
-        AppTheme.showToast(context, 'Error saving invoice: $e', isError: true);
+        AppTheme.showToast(context, '${l10n.errorSaving}: $e', isError: true);
       }
     } finally {
       if (mounted) {
@@ -253,9 +255,10 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create Invoice'),
+        title: Text(l10n.createInvoice),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -298,6 +301,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
   }
 
   Widget _buildSplitLayout() {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.stretch, // Ensure equal height
       children: [
@@ -333,7 +337,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text('Invoice Preview', style: Theme.of(context).textTheme.headlineSmall),
+                    Text(l10n.invoiceDetails, style: Theme.of(context).textTheme.headlineSmall),
                     const SizedBox(height: 24),
                     Expanded(
                       child: _buildItemsList(isScrollable: true),
@@ -353,6 +357,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
   }
 
   Widget _buildCustomerCard() {
+    final l10n = AppLocalizations.of(context)!;
     final customLabel = (_profile?.customFieldLabel?.isNotEmpty == true) ? _profile!.customFieldLabel! : 'Reference No';
     final customHint = (_profile?.customFieldPlaceholder?.isNotEmpty == true) ? _profile!.customFieldPlaceholder! : 'Enter detail...';
 
@@ -366,21 +371,21 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
               children: [
                 Icon(Icons.person_outline, size: 20, color: Theme.of(context).colorScheme.primary),
                 const SizedBox(width: 8),
-                Text('Customer Details', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                Text(l10n.customerDetails, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
               ],
             ),
             const SizedBox(height: 16),
             CustomTextField(
               controller: _customerNameController,
-              label: 'Customer Name',
-              hint: 'Enter customer name',
+              label: l10n.customerName,
+              hint: l10n.enterCustomerName,
               prefixIcon: Icons.person_outline,
             ),
             const SizedBox(height: 12),
             CustomTextField(
               controller: _customerPhoneController,
-              label: 'Mobile Number',
-              hint: 'Enter mobile number',
+              label: l10n.mobileNumber,
+              hint: l10n.enterMobileNumber,
               prefixIcon: Icons.phone_outlined,
               keyboardType: TextInputType.phone,
             ),
@@ -405,7 +410,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
               borderRadius: BorderRadius.circular(12),
               child: InputDecorator(
                 decoration: InputDecoration(
-                  labelText: 'Invoice Date',
+                  labelText: l10n.invoiceDate,
                   prefixIcon: const Icon(Icons.calendar_today_outlined),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 ),
@@ -419,17 +424,18 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
   }
 
   Widget _buildItemFormCard() {
+    final l10n = AppLocalizations.of(context)!;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Add Item', style: Theme.of(context).textTheme.titleMedium),
+            Text(l10n.addItem, style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 16),
             TextField(
               controller: _itemNameController,
-              decoration: const InputDecoration(labelText: 'Item Name', prefixIcon: Icon(Icons.shopping_bag_outlined)),
+              decoration: InputDecoration(labelText: l10n.itemName, prefixIcon: const Icon(Icons.shopping_bag_outlined)),
             ),
             const SizedBox(height: 16),
             Row(
@@ -438,7 +444,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                   child: TextField(
                     controller: _itemQuantityController,
                     focusNode: _qtyFocus,
-                    decoration: const InputDecoration(labelText: 'Qty'),
+                    decoration: InputDecoration(labelText: l10n.qty),
                     keyboardType: TextInputType.number,
                   ),
                 ),
@@ -448,8 +454,8 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                   child: TextField(
                     controller: _itemPriceController,
                     focusNode: _priceFocus,
-                    decoration: const InputDecoration(labelText: 'Price', prefixText: '₹'),
-                    keyboardType: TextInputType.numberWithOptions(decimal: true),
+                    decoration: InputDecoration(labelText: l10n.price, prefixText: '₹'),
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   ),
                 ),
               ],
@@ -460,7 +466,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
               children: [
                 Row(
                   children: [
-                    Text('Discount', style: Theme.of(context).textTheme.bodySmall),
+                    Text(l10n.discount, style: Theme.of(context).textTheme.bodySmall),
                     const SizedBox(width: 8),
                     SegmentedButton<bool>(
                       segments: const [
@@ -500,7 +506,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
               child: FilledButton.icon(
                 onPressed: _addItem,
                 icon: const Icon(Icons.add),
-                label: const Text('Add to Invoice'),
+                label: Text(l10n.addToInvoice),
               ),
             ),
           ],
@@ -510,12 +516,13 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
   }
 
   Widget _buildItemsList({bool isScrollable = false}) {
+    final l10n = AppLocalizations.of(context)!;
     if (_items.isEmpty) {
       final placeholder = Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 32),
           child: Text(
-            'No items added',
+            l10n.noItemsAdded,
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
@@ -538,7 +545,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
           child: ListTile(
             title: Text(item.itemName, style: const TextStyle(fontWeight: FontWeight.bold)),
             subtitle: Text(
-              '${item.quantity} x ₹${item.price.toStringAsFixed(2)} - Disc: ${item.isDiscountItemPercentage ? "${item.discountItem}%" : "₹${item.discountItem}"}',
+              '${item.quantity} x ₹${item.price.toStringAsFixed(2)} - ${l10n.discount}: ${item.isDiscountItemPercentage ? "${item.discountItem}%" : "₹${item.discountItem}"}',
             ),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
@@ -564,7 +571,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Items (${_items.length})', 
+          '${l10n.item}s (${_items.length})', 
           style: Theme.of(context).textTheme.titleSmall?.copyWith(color: Theme.of(context).colorScheme.primary)
         ),
         const SizedBox(height: 8),
@@ -574,15 +581,16 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
   }
 
   Widget _buildSummaryCard({bool showAsCard = true}) {
+    final l10n = AppLocalizations.of(context)!;
     final content = Column(
       children: [
-            _buildSummaryRow('Subtotal', '₹${_subtotal.toStringAsFixed(2)}'),
+            _buildSummaryRow(l10n.subtotal, '₹${_subtotal.toStringAsFixed(2)}'),
             const SizedBox(height: 12),
             
             // Discount Row
             Row(
               children: [
-                const Text('Discount', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 13)),
+                Text(l10n.discount, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13)),
                 const SizedBox(width: 4),
                 SizedBox(
                   width: 70,
@@ -647,7 +655,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
             // GST Row
             Row(
               children: [
-                const Text('GST (%)', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 13)),
+                Text('${l10n.gst} (%)', style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13)),
                 const SizedBox(width: 8),
                 SizedBox(
                   width: 55,
@@ -687,7 +695,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
             ),
             const Divider(height: 32),
             _buildSummaryRow(
-              'Grand Total', 
+              l10n.grandTotal, 
               '₹${_grandTotal.toStringAsFixed(2)}', 
               isBold: true, 
               color: Theme.of(context).colorScheme.primary
@@ -728,6 +736,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
   }
 
   Widget _buildSaveButton() {
+    final l10n = AppLocalizations.of(context)!;
     return SizedBox(
       width: double.infinity,
       child: FilledButton(
@@ -737,7 +746,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
         ),
         child: _isSaving 
           ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
-          : const Text('Save Invoice', style: TextStyle(fontSize: 16)),
+          : Text(l10n.saveInvoice, style: const TextStyle(fontSize: 16)),
       ),
     );
   }

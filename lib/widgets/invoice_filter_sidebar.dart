@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:invoice_gen_app/l10n/app_localizations.dart';
 
 class InvoiceFilterSidebar extends StatefulWidget {
   final Function(Map<String, dynamic> filters) onApply;
@@ -62,6 +63,7 @@ class _InvoiceFilterSidebarState extends State<InvoiceFilterSidebar> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       color: theme.scaffoldBackgroundColor,
       child: Column(
@@ -73,7 +75,7 @@ class _InvoiceFilterSidebarState extends State<InvoiceFilterSidebar> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Filters',
+                  l10n.filters,
                   style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -81,7 +83,7 @@ class _InvoiceFilterSidebarState extends State<InvoiceFilterSidebar> {
                 TextButton.icon(
                   onPressed: _reset,
                   icon: const Icon(Icons.refresh, size: 18),
-                  label: const Text('Reset'),
+                  label: Text(l10n.reset),
                 ),
               ],
             ),
@@ -94,7 +96,7 @@ class _InvoiceFilterSidebarState extends State<InvoiceFilterSidebar> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'DATE RANGE',
+                    l10n.dateRange,
                     style: theme.textTheme.labelSmall?.copyWith(
                       letterSpacing: 1.2,
                       fontWeight: FontWeight.bold,
@@ -102,15 +104,15 @@ class _InvoiceFilterSidebarState extends State<InvoiceFilterSidebar> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  _buildPresetButton('This Month', 'this_month'),
+                  _buildPresetButton(l10n.thisMonth, 'this_month'),
                   const SizedBox(height: 8),
-                  _buildPresetButton('Last Month', 'last_month'),
+                  _buildPresetButton(l10n.lastMonth, 'last_month'),
                   const SizedBox(height: 8),
-                  _buildPresetButton('This Year', 'this_year'),
+                  _buildPresetButton(l10n.thisYear, 'this_year'),
                   const SizedBox(height: 24),
                   
                   Text(
-                    'CUSTOM RANGE',
+                    l10n.customRange,
                     style: theme.textTheme.labelSmall?.copyWith(
                       letterSpacing: 1.2,
                       fontWeight: FontWeight.bold,
@@ -118,9 +120,9 @@ class _InvoiceFilterSidebarState extends State<InvoiceFilterSidebar> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  _buildDatePicker(context, 'From Date', _startDate, (d) => setState(() => _startDate = d)),
+                  _buildDatePicker(context, l10n.fromDate, _startDate, (d) => setState(() => _startDate = d)),
                   const SizedBox(height: 12),
-                  _buildDatePicker(context, 'To Date', _endDate, (d) => setState(() => _endDate = d)),
+                  _buildDatePicker(context, l10n.toDate, _endDate, (d) => setState(() => _endDate = d)),
                   
                   const SizedBox(height: 40),
                 ],
@@ -134,7 +136,7 @@ class _InvoiceFilterSidebarState extends State<InvoiceFilterSidebar> {
                 Expanded(
                   child: FilledButton(
                     onPressed: _apply,
-                    child: const Text('Apply'),
+                    child: Text(l10n.apply),
                   ),
                 ),
               ],
@@ -158,6 +160,7 @@ class _InvoiceFilterSidebarState extends State<InvoiceFilterSidebar> {
   }
 
   Widget _buildDatePicker(BuildContext context, String hint, DateTime? date, Function(DateTime) onSelect) {
+    final l10n = AppLocalizations.of(context)!;
     return InkWell(
       onTap: () async {
         final picked = await showDatePicker(
@@ -165,6 +168,7 @@ class _InvoiceFilterSidebarState extends State<InvoiceFilterSidebar> {
           initialDate: date ?? DateTime.now(),
           firstDate: DateTime(2000),
           lastDate: DateTime(2100),
+          locale: Localizations.localeOf(context),
         );
         if (picked != null) onSelect(picked);
       },
@@ -182,7 +186,7 @@ class _InvoiceFilterSidebarState extends State<InvoiceFilterSidebar> {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                date != null ? DateFormat('dd MMM yyyy').format(date) : hint,
+                date != null ? DateFormat('dd MMM yyyy', l10n.localeName).format(date) : hint,
                 style: TextStyle(
                   fontSize: 14,
                   color: date != null 

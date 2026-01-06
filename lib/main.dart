@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:invoice_gen_app/l10n/app_localizations.dart';
 import 'core/config.dart';
 import 'core/theme.dart';
 import 'screens/login_screen.dart';
-import 'screens/main_navigation.dart';
+import 'providers/locale_provider.dart';
+
+final localeProvider = LocaleProvider();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,11 +25,28 @@ class InvoiceGenApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Invoice Generator',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      home: const LoginScreen(),
+    return AnimatedBuilder(
+      animation: localeProvider,
+      builder: (context, child) {
+        return MaterialApp(
+          title: 'Invoice Generator',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.lightTheme,
+          locale: localeProvider.locale,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale('en'),
+            Locale('te'),
+            Locale('hi'),
+          ],
+          home: const LoginScreen(),
+        );
+      },
     );
   }
 }

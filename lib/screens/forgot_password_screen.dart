@@ -5,6 +5,7 @@ import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../services/supabase_service.dart';
 import '../widgets/responsive_layout.dart';
+import 'package:invoice_gen_app/l10n/app_localizations.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -20,9 +21,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   Future<void> _handleResetPassword() async {
     final email = _emailController.text.trim();
+    final l10n = AppLocalizations.of(context)!;
 
     if (email.isEmpty) {
-      _showToast('Please enter your email address', isError: true);
+      _showToast(l10n.enterEmailAddress, isError: true);
       return;
     }
 
@@ -31,7 +33,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     try {
       await _authService.resetPassword(email);
       if (mounted) {
-        _showToast('Password reset link sent! Check your email.');
+        _showToast(l10n.passwordResetSent);
         Navigator.pop(context);
       }
     } on AuthException catch (e) {
@@ -40,7 +42,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       }
     } catch (e) {
       if (mounted) {
-        _showToast('An unexpected error occurred', isError: true);
+        _showToast(l10n.unexpectedError, isError: true);
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -58,6 +60,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   }
 
   Widget _buildResetForm() {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.all(24.0),
       child: Column(
@@ -77,7 +80,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
           const SizedBox(height: 24),
           Text(
-            'Reset Password',
+            l10n.resetPassword,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.bold,
@@ -86,7 +89,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Enter your email to receive recovery instructions',
+            l10n.recoveryInstructions,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -96,7 +99,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
           CustomTextField(
             controller: _emailController,
-            label: 'Email Address',
+            label: l10n.email,
             hint: 'name@example.com',
             prefixIcon: Icons.email_outlined,
             keyboardType: TextInputType.emailAddress,
@@ -105,7 +108,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           _isLoading
               ? const Center(child: CircularProgressIndicator())
               : CustomButton(
-                  text: 'Send Reset Link',
+                  text: l10n.sendResetLink,
                   onPressed: _handleResetPassword,
                 ),
           
@@ -113,11 +116,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text("Remember your password? "),
+              Text(l10n.rememberPassword),
               GestureDetector(
                 onTap: () => Navigator.pop(context),
                 child: Text(
-                  'Sign In',
+                  l10n.signIn,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).colorScheme.primary,
@@ -132,6 +135,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   }
 
   Widget _buildIllustration() {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -143,7 +147,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
           const SizedBox(height: 32),
           Text(
-            'Account Recovery',
+            l10n.accountRecovery,
             style: Theme.of(context).textTheme.displaySmall?.copyWith(
               fontWeight: FontWeight.bold,
               color: Theme.of(context).colorScheme.onSurface,
@@ -153,7 +157,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 48),
             child: Text(
-              'Don\'t worry! It happens to the best of us. We\'ll help you get back to your dashboard in no time.',
+              l10n.recoveryMessage,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,

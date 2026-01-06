@@ -4,6 +4,7 @@ import 'dashboard_screen.dart';
 import 'view_invoices_screen.dart';
 import 'settings_screen.dart';
 import '../services/profile_service.dart';
+import 'package:invoice_gen_app/l10n/app_localizations.dart';
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
@@ -54,6 +55,7 @@ class _MainNavigationState extends State<MainNavigation> {
     // "move nav to below only on tab mode also"
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: _screens[_selectedIndex],
@@ -62,21 +64,21 @@ class _MainNavigationState extends State<MainNavigation> {
         onDestinationSelected: _onItemTapped,
         backgroundColor: colorScheme.surface,
         indicatorColor: colorScheme.primaryContainer,
-        destinations: const [
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.grid_view_outlined),
-            selectedIcon: Icon(Icons.grid_view),
-            label: 'Dashboard',
+            icon: const Icon(Icons.grid_view_outlined),
+            selectedIcon: const Icon(Icons.grid_view),
+            label: l10n.dashboard,
           ),
           NavigationDestination(
-            icon: Icon(Icons.description_outlined),
-            selectedIcon: Icon(Icons.description),
-            label: 'Invoices',
+            icon: const Icon(Icons.description_outlined),
+            selectedIcon: const Icon(Icons.description),
+            label: l10n.invoices,
           ),
           NavigationDestination(
-            icon: Icon(Icons.settings_outlined),
-            selectedIcon: Icon(Icons.settings),
-            label: 'Settings',
+            icon: const Icon(Icons.settings_outlined),
+            selectedIcon: const Icon(Icons.settings),
+            label: l10n.settings,
           ),
         ],
       ),

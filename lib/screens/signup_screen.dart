@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:invoice_gen_app/l10n/app_localizations.dart';
 import '../core/theme.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
@@ -24,9 +25,10 @@ class _SignupScreenState extends State<SignupScreen> {
     final name = _nameController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
+    final l10n = AppLocalizations.of(context)!;
 
     if (name.isEmpty || email.isEmpty || password.isEmpty) {
-      _showError('Please fill in all fields');
+      _showError(l10n.fillAllFields);
       return;
     }
 
@@ -39,7 +41,7 @@ class _SignupScreenState extends State<SignupScreen> {
         fullName: name,
       );
       if (mounted) {
-        AppTheme.showToast(context, 'Registration successful! Please check your email for verification.');
+        AppTheme.showToast(context, l10n.registrationSuccess);
         Navigator.pop(context);
       }
     } on AuthException catch (e) {
@@ -48,7 +50,7 @@ class _SignupScreenState extends State<SignupScreen> {
       }
     } catch (e) {
       if (mounted) {
-        _showError('An unexpected error occurred');
+        _showError(l10n.unexpectedError);
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -60,10 +62,19 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   String _mapSupabaseError(String error) {
+    // If we're already passing a localized string (like fillAllFields or unexpectedError), just return it
+    // But wait, fillAllFields is passed as 'message' to _showError.
+    // _mapSupabaseError receives it.
+    // The check `error.contains('User already registered')` is for Supabase English error messages.
+    // So we need to match the backend error (usually English) and replace with Localized string.
+    
+    final l10n = AppLocalizations.of(context)!;
     if (error.contains('User already registered')) {
-      return 'Account already exists. Try signing in instead.';
+      return l10n.accountExists;
     }
-    return error;
+    // If it's one of our localized strings already (unlikely unless logic flow is mixed), or a backend error we show raw.
+    // We should probably just return error.
+    return error; 
   }
 
   @override
@@ -75,6 +86,7 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   Widget _buildSignupForm() {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.all(24.0),
       child: Column(
@@ -94,7 +106,7 @@ class _SignupScreenState extends State<SignupScreen> {
           ),
           const SizedBox(height: 24),
           Text(
-            'Create Account',
+            l10n.createAccount,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.bold,
@@ -103,7 +115,7 @@ class _SignupScreenState extends State<SignupScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Join our premium finance community',
+            l10n.joinCommunity,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -113,23 +125,23 @@ class _SignupScreenState extends State<SignupScreen> {
 
           CustomTextField(
             controller: _nameController,
-            label: 'Full Name',
-            hint: 'John Doe',
+            label: l10n.fullName,
+            hint: l10n.enterName,
             prefixIcon: Icons.person_outline,
           ),
           const SizedBox(height: 16),
           CustomTextField(
             controller: _emailController,
-            label: 'Email Address',
-            hint: 'name@example.com',
+            label: l10n.emailAddress,
+            hint: l10n.enterEmail,
             prefixIcon: Icons.email_outlined,
             keyboardType: TextInputType.emailAddress,
           ),
           const SizedBox(height: 16),
           CustomTextField(
             controller: _passwordController,
-            label: 'Password',
-            hint: 'Create a password',
+            label: l10n.password,
+            hint: l10n.createPassword,
             prefixIcon: Icons.lock_outline,
             isPassword: true,
           ),
@@ -138,55 +150,23 @@ class _SignupScreenState extends State<SignupScreen> {
           _isLoading
               ? const Center(child: CircularProgressIndicator())
               : CustomButton(
-                  text: 'Create Account',
+                  text: l10n.createAccount,
                   onPressed: _handleSignUp,
                 ),
           
-           const SizedBox(height: 24),
-           Row(
-             children: [
-               Expanded(child: Divider(color: Theme.of(context).dividerColor)),
-               Padding(
-                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                 child: Text(
-                   'Or sign up with',
-                   style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13),
-                 ),
-               ),
-               Expanded(child: Divider(color: Theme.of(context).dividerColor)),
-             ],
-           ),
+
            
-           const SizedBox(height: 24),
-           Row(
-             children: [
-               Expanded(
-                 child: SocialButton(
-                   text: 'Google',
-                   icon: const Icon(Icons.g_mobiledata, size: 32, color: Color(0xFF4285F4)),
-                   onPressed: () {},
-                 ),
-               ),
-               const SizedBox(width: 16),
-               Expanded(
-                 child: SocialButton(
-                   text: 'Phone',
-                   icon: Icon(Icons.phone_android, size: 20, color: Theme.of(context).colorScheme.primary),
-                   onPressed: () {},
-                 ),
-               ),
-             ],
-           ),
+
 
           const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text('Already have an account? '),
+              Text(l10n.alreadyHaveAccount),
               GestureDetector(
                 onTap: () => Navigator.pop(context),
                 child: Text(
-                  'Sign In',
+                  l10n.signIn,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).colorScheme.primary,
@@ -201,6 +181,7 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   Widget _buildIllustration() {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -212,7 +193,7 @@ class _SignupScreenState extends State<SignupScreen> {
           ),
           const SizedBox(height: 32),
           Text(
-            'Join the Future',
+            l10n.joinFuture,
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.bold,
               color: Theme.of(context).colorScheme.onSurface,
@@ -222,7 +203,7 @@ class _SignupScreenState extends State<SignupScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 48),
             child: Text(
-              'Create an account and access premium financial tools designed for modern growth.',
+              l10n.joinFutureDesc,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
