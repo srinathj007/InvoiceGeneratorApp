@@ -6,7 +6,8 @@ import '../models/business_profile.dart';
 import 'profile_screen.dart';
 import 'login_screen.dart';
 import '../core/theme.dart';
-import '../main.dart'; // Access localeProvider
+import '../main.dart'; // Access localeProvider and themeProvider
+import '../providers/theme_provider.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -91,184 +92,436 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  void _showLanguagePicker() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+               Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Text(
+                  AppLocalizations.of(context)!.language,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                ),
+              ),
+              _LanguageOption(
+                locale: const Locale('en'),
+                label: 'English',
+                isSelected: localeProvider.locale.languageCode == 'en',
+                onTap: () {
+                  localeProvider.setLocale(const Locale('en'));
+                  Navigator.pop(context);
+                },
+              ),
+              _LanguageOption(
+                locale: const Locale('te'),
+                label: 'Telugu',
+                isSelected: localeProvider.locale.languageCode == 'te',
+                onTap: () {
+                  localeProvider.setLocale(const Locale('te'));
+                  Navigator.pop(context);
+                },
+              ),
+              _LanguageOption(
+                locale: const Locale('hi'),
+                label: 'Hindi',
+                isSelected: localeProvider.locale.languageCode == 'hi',
+                onTap: () {
+                  localeProvider.setLocale(const Locale('hi'));
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showThemePicker() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Select Theme',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 24),
+              Wrap(
+                spacing: 20,
+                runSpacing: 20,
+                alignment: WrapAlignment.center,
+                children: ThemeProvider.availableColors.map((color) {
+                  final isSelected = themeProvider.selectedColor == color;
+                  return GestureDetector(
+                    onTap: () {
+                      themeProvider.setColor(color);
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: color,
+                        shape: BoxShape.circle,
+                        border: isSelected 
+                            ? Border.all(color: Colors.black, width: 3)
+                            : Border.all(color: Colors.grey.withOpacity(0.3), width: 1),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 5,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: isSelected 
+                          ? const Icon(Icons.check, color: Colors.white, size: 30)
+                          : null,
+                    ),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
     
+    // Dynamic gradient based on selected theme
+    final baseColor = themeProvider.selectedColor;
+    final gradient = LinearGradient(
+      colors: [
+        baseColor.withOpacity(0.8), 
+        baseColor,
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    );
+
     return Scaffold(
-      backgroundColor: theme.colorScheme.surface,
+      backgroundColor: const Color(0xFFF5F5F5), // Light grey background
       appBar: AppBar(
-        title: Text(l10n.settings),
-        backgroundColor: theme.colorScheme.surface,
+        title: Text(l10n.settings, style: const TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: const Color(0xFFF5F5F5),
         surfaceTintColor: Colors.transparent,
+        elevation: 0,
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+              padding: const EdgeInsets.all(16),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                   // 1. Logo
-                   Container(
-                    height: 90,
-                    width: 90,
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.primaryContainer.withOpacity(0.4),
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    child: _profile?.logoUrl != null
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(24),
-                          child: Image.network(_profile!.logoUrl!, fit: BoxFit.contain),
-                        )
-                      : Icon(Icons.business_outlined, size: 40, color: theme.colorScheme.primary),
-                  ),
-                  const SizedBox(height: 32),
-
-                  // 2. Business Name
-                  Text(
-                    _profile?.businessName ?? 'Business Name',
-                    style: theme.textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: theme.colorScheme.onSurface,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-
-                  // 3. Proprietor Name
-                  if (_profile?.proprietor.isNotEmpty == true) ...[
-                    Text(
-                      'Prop: ${_profile!.proprietor}',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                  const SizedBox(height: 24),
-                  
-                  // Language Selector
+                  // 1. Header Profile Card
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.surfaceContainerLow,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: theme.colorScheme.outlineVariant.withOpacity(0.3)),
+                      gradient: gradient,
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: baseColor.withOpacity(0.3),
+                          blurRadius: 10,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.language, color: theme.colorScheme.primary),
-                        const SizedBox(width: 12),
-                        Text(l10n.language, style: theme.textTheme.bodyMedium),
-                        const Spacer(),
-                        DropdownButton<Locale>(
-                          value: localeProvider.locale,
-                          underline: const SizedBox(),
-                          items: const [
-                            DropdownMenuItem(value: Locale('en'), child: Text('English')),
-                            DropdownMenuItem(value: Locale('te'), child: Text('Telugu')),
-                            DropdownMenuItem(value: Locale('hi'), child: Text('Hindi')),
-                          ], 
-                          onChanged: (val) {
-                            if (val != null) {
-                              localeProvider.setLocale(val);
-                            }
+                        Container(
+                          height: 70,
+                          width: 70,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 2),
+                          ),
+                          child: _profile?.logoUrl != null
+                              ? ClipOval(
+                                  child: Image.network(_profile!.logoUrl!, fit: BoxFit.cover),
+                                )
+                              : const Icon(Icons.person, size: 40, color: Colors.white),
+                        ),
+                        const SizedBox(width: 20),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _profile?.businessName ?? 'Business Name',
+                                style: theme.textTheme.titleLarge?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              if (_profile?.proprietor.isNotEmpty == true) ...[
+                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.person, size: 14, color: Colors.white70),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      'Prop: ${_profile!.proprietor}',
+                                      style: theme.textTheme.bodyMedium?.copyWith(
+                                        color: Colors.white.withOpacity(0.95),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                              // Added Phone and Address to header as requested
+                              if (_profile?.phoneNumbers.isNotEmpty == true) ...[
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.phone, size: 14, color: Colors.white70),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      _profile!.phoneNumbers,
+                                      style: theme.textTheme.bodySmall?.copyWith(
+                                        color: Colors.white.withOpacity(0.9),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                              if (_profile?.address.isNotEmpty == true) ...[
+                                const SizedBox(height: 4),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Icon(Icons.location_on, size: 14, color: Colors.white70),
+                                    const SizedBox(width: 6),
+                                    Expanded(
+                                      child: Text(
+                                        _profile!.address,
+                                        style: theme.textTheme.bodySmall?.copyWith(
+                                          color: Colors.white.withOpacity(0.9),
+                                        ),
+                                        maxLines: 3,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 30),
+
+                  // 2. Settings Group
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Column(
+                      children: [
+                        _SettingsTile(
+                          icon: Icons.edit_outlined,
+                          iconColor: Colors.blue,
+                          title: l10n.editProfile,
+                          subtitle: 'Modify your business details',
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const ProfileScreen()),
+                            ).then((_) => _loadProfile());
                           },
+                        ),
+                         const _Divider(),
+                         _SettingsTile(
+                          icon: Icons.language,
+                          iconColor: Colors.purple,
+                          title: l10n.language,
+                          trailing: Text(
+                            localeProvider.locale.languageCode.toUpperCase(),
+                            style: TextStyle(color: theme.colorScheme.onSurfaceVariant, fontWeight: FontWeight.bold),
+                          ),
+                          onTap: _showLanguagePicker,
+                        ),
+                        // Business Info Tile Removed - Moved to Header
+                        const _Divider(),
+                        _SettingsTile(
+                          icon: Icons.color_lens_outlined,
+                          iconColor: baseColor, // Dynamic color
+                          title: 'App Theme',
+                          trailing: Container(
+                            width: 24,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              color: baseColor,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.grey.withOpacity(0.3)),
+                            ),
+                          ),
+                          onTap: _showThemePicker,
+                        ),
+                         const _Divider(),
+                        _SettingsTile(
+                          icon: Icons.info_outline,
+                          iconColor: Colors.grey,
+                          title: 'About',
+                          subtitle: 'App Version 1.0.0',
+                          onTap: () {}, 
+                          showArrow: false,
                         ),
                       ],
                     ),
                   ),
 
                   const SizedBox(height: 24),
-
-                  // 4. Phone Numbers & Address (Info Section)
+                  
+                  // 3. Account Group
+                  const Padding(
+                    padding: EdgeInsets.only(left: 16, bottom: 8),
+                    child: Text(
+                      'Account', 
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+                    ),
+                  ),
                   Container(
-                    padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.surfaceContainerLow,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: theme.colorScheme.outlineVariant.withOpacity(0.3)),
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
                     ),
                     child: Column(
                       children: [
-                        if (_profile?.phoneNumbers.isNotEmpty == true)
-                          _buildInfoRow(context, Icons.phone_outlined, _profile!.phoneNumbers),
-                        if (_profile?.phoneNumbers.isNotEmpty == true && _profile?.address.isNotEmpty == true)
-                          Divider(height: 24, color: theme.colorScheme.outlineVariant.withOpacity(0.3)),
-                        if (_profile?.address.isNotEmpty == true)
-                          _buildInfoRow(context, Icons.location_on_outlined, _profile!.address),
+                        _SettingsTile(
+                          icon: Icons.logout,
+                          iconColor: theme.colorScheme.onSurface,
+                          title: l10n.logout,
+                          onTap: _handleLogout,
+                        ),
                       ],
                     ),
                   ),
 
                   const SizedBox(height: 40),
-
-                  // 5. Action Buttons
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () {
-                             Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const ProfileScreen()),
-                            ).then((_) => _loadProfile());
-                          },
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            side: BorderSide(color: theme.colorScheme.primary),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                            foregroundColor: theme.colorScheme.primary,
-                          ),
-                          child: Text(l10n.editProfile, style: const TextStyle(fontWeight: FontWeight.bold)),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: FilledButton(
-                          onPressed: _handleLogout,
-                          style: FilledButton.styleFrom(
-                            backgroundColor: theme.colorScheme.errorContainer,
-                            foregroundColor: theme.colorScheme.error,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                            elevation: 0,
-                          ),
-                          child: Text(l10n.logout, style: const TextStyle(fontWeight: FontWeight.bold)),
-                        ),
-                      ),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 32),
-                  Text(
-                    'App Version 1.0.0',
-                    style: TextStyle(color: theme.colorScheme.onSurfaceVariant.withOpacity(0.5)),
-                  ),
                 ],
               ),
             ),
     );
   }
+}
 
-  Widget _buildInfoRow(BuildContext context, IconData icon, String text) {
-    final theme = Theme.of(context);
-    return Row(
-      children: [
-        Icon(icon, size: 20, color: theme.colorScheme.primary),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Text(
-            text,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurface,
-            ),
-          ),
+class _SettingsTile extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final String? subtitle;
+  final VoidCallback onTap;
+  final Widget? trailing;
+  final bool showArrow;
+
+  const _SettingsTile({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    this.subtitle,
+    required this.onTap,
+    this.trailing,
+    this.showArrow = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      onTap: onTap,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      leading: Container(
+        height: 40,
+        width: 40,
+        decoration: BoxDecoration(
+          color: iconColor.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(10),
         ),
-      ],
+        child: Icon(icon, color: iconColor, size: 22),
+      ),
+      title: Text(
+        title,
+        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+      ),
+      subtitle: subtitle != null ? Text(subtitle!, style: const TextStyle(fontSize: 13, color: Colors.grey)) : null,
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (trailing != null) ...[
+            trailing!,
+            const SizedBox(width: 8),
+          ],
+          if (showArrow)
+            const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+        ],
+      ),
+    );
+  }
+}
+
+class _Divider extends StatelessWidget {
+  const _Divider();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Divider(height: 1, indent: 70, endIndent: 20, color: Color(0xFFEEEEEE));
+  }
+}
+
+class _LanguageOption extends StatelessWidget {
+  final Locale locale;
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _LanguageOption({
+    required this.locale,
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      onTap: onTap,
+      title: Text(label),
+      leading: Radio<String>(
+        value: locale.languageCode,
+        groupValue: isSelected ? locale.languageCode : null,
+        onChanged: (_) => onTap(),
+        activeColor: Theme.of(context).primaryColor,
+      ),
     );
   }
 }

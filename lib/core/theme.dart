@@ -5,7 +5,7 @@ class AppTheme {
   // Using a professional Blue-Grey base for a modern enterprise look
   static const Color seedColor = Color(0xFF2563EB); 
 
-  static ThemeData get lightTheme {
+  static ThemeData getTheme(Color seedColor) {
     final colorScheme = ColorScheme.fromSeed(
       seedColor: seedColor,
       brightness: Brightness.light,
