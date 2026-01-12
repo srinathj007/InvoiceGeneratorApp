@@ -23,19 +23,32 @@ class InvoiceDetailScreen extends StatefulWidget {
   State<InvoiceDetailScreen> createState() => _InvoiceDetailScreenState();
 }
 
-class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
+class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> with SingleTickerProviderStateMixin {
   late Invoice _invoice;
   final _profileService = ProfileService();
   final _invoiceService = InvoiceService();
   bool _isLoading = false;
+  bool _isProcessing = false;
+  String _processingMessage = '';
+  late AnimationController _rotationController;
 
   @override
   void initState() {
     super.initState();
     _invoice = widget.invoice;
+    _rotationController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    );
     if (_invoice.items.isEmpty) {
       _refreshInvoice();
     }
+  }
+
+  @override
+  void dispose() {
+    _rotationController.dispose();
+    super.dispose();
   }
 
   Future<void> _refreshInvoice() async {
@@ -96,6 +109,66 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
     }
   }
 
+  Future<void> _handleShare() async {
+    if (_isProcessing) return;
+    setState(() {
+      _isProcessing = true;
+      _processingMessage = 'Generating PDF...';
+    });
+    _rotationController.repeat();
+    try {
+      final profile = await _profileService.getProfile();
+      if (profile != null && mounted) {
+        final pdfData = await PdfService().generateInvoice(_invoice, profile);
+        await Printing.sharePdf(
+          bytes: pdfData,
+          filename: 'Invoice-${_invoice.invoiceNumber}.pdf',
+        );
+      }
+    } catch (e) {
+      if (mounted) AppTheme.showToast(context, 'Error sharing PDF', isError: true);
+    } finally {
+      if (mounted) {
+        setState(() => _isProcessing = false);
+        _rotationController.stop();
+      }
+    }
+  }
+
+  Future<void> _handlePrint() async {
+    if (_isProcessing) return;
+    setState(() {
+      _isProcessing = true;
+      _processingMessage = 'Preparing Print...';
+    });
+    _rotationController.repeat();
+    try {
+      final profile = await _profileService.getProfile();
+      if (profile != null && mounted) {
+        final pdfData = await PdfService().generateInvoice(_invoice, profile);
+        await Printing.layoutPdf(
+          onLayout: (format) async => pdfData,
+          name: 'Invoice-${_invoice.invoiceNumber}',
+        );
+      }
+    } catch (e) {
+      if (mounted) AppTheme.showToast(context, 'Error printing PDF', isError: true);
+    } finally {
+      if (mounted) {
+        setState(() => _isProcessing = false);
+        _rotationController.stop();
+      }
+    }
+  }
+
+  Future<void> _handleEdit() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => CreateInvoiceScreen(invoiceToEdit: _invoice)),
+    );
+    if (result == true) _refreshInvoice();
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -105,87 +178,92 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('#${_invoice.invoiceNumber}'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.share_outlined),
-            onPressed: () async {
-              final profile = await _profileService.getProfile();
-              if (profile != null && mounted) {
-                final pdfData = await PdfService().generateInvoice(_invoice, profile);
-                await Printing.sharePdf(
-                  bytes: pdfData,
-                  filename: 'Invoice-${_invoice.invoiceNumber}.pdf',
-                );
-              }
-            },
-            tooltip: l10n.sharePdf,
+    return Stack(
+      children: [
+        Scaffold(
+          appBar: AppBar(
+            title: Text('#${_invoice.invoiceNumber}'),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            // Removed share and print from AppBar to put them in premium bottom bar
           ),
-          IconButton(
-            icon: const Icon(Icons.print_outlined),
-            onPressed: () async {
-              final profile = await _profileService.getProfile();
-              if (profile != null && mounted) {
-                final pdfData = await PdfService().generateInvoice(_invoice, profile);
-                await Printing.layoutPdf(
-                  onLayout: (format) async => pdfData,
-                  name: 'Invoice-${_invoice.invoiceNumber}',
-                );
-              }
-            },
-            tooltip: l10n.printInvoice,
+          extendBodyBehindAppBar: true,
+          body: Stack(
+            children: [
+              // Background Accent
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                height: 200,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        theme.colorScheme.primary,
+                        theme.colorScheme.primary.withOpacity(0.8),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              
+              SafeArea(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 110),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _buildModernPreview(theme),
+                    ],
+                  ),
+                ),
+              ),
+              
+              // Bottom Actions
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: _buildBottomActions(theme),
+              ),
+            ],
           ),
-          const SizedBox(width: 8),
-        ],
-      ),
-      extendBodyBehindAppBar: true,
-      body: Stack(
-        children: [
-          // Background Accent
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: 200,
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    theme.colorScheme.primary,
-                    theme.colorScheme.primary.withOpacity(0.8),
-                  ],
+        ),
+        if (_isProcessing)
+          Container(
+            color: Colors.black.withOpacity(0.3),
+            child: Center(
+              child: Card(
+                elevation: 8,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      RotationTransition(
+                        turns: _rotationController,
+                        child: Icon(
+                          Icons.sync_rounded,
+                          size: 40,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        _processingMessage,
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
-          
-          SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _buildModernPreview(theme),
-                ],
-              ),
-            ),
-          ),
-          
-          // Bottom Actions
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: _buildBottomActions(theme),
-          ),
-        ],
-      ),
+      ],
     );
   }
 
@@ -505,44 +583,125 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
 
   Widget _buildBottomActions(ThemeData theme) {
     final l10n = AppLocalizations.of(context)!;
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.fromLTRB(12, 12, 12, bottomPadding + 12),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
+        color: Colors.white,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(32),
+          topRight: Radius.circular(32),
+        ),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5)),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 15,
+            offset: const Offset(0, -5),
+          ),
         ],
       ),
       child: Row(
         children: [
           Expanded(
-            child: OutlinedButton.icon(
-              onPressed: _handleDelete,
-              icon: const Icon(Icons.delete_outline),
-              label: Text(l10n.delete),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: theme.colorScheme.error,
-                side: BorderSide(color: theme.colorScheme.error),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-              ),
+            child: _buildStandardActionButton(
+              icon: Icons.edit_outlined,
+              label: l10n.edit,
+              onTap: _handleEdit,
+              color: theme.colorScheme.primary,
+              theme: theme,
             ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 8),
           Expanded(
-            child: FilledButton.icon(
-              onPressed: () async {
-                final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => CreateInvoiceScreen(invoiceToEdit: _invoice)),
-                );
-                if (result == true) _refreshInvoice();
-              },
-              icon: const Icon(Icons.edit_outlined),
-              label: Text(l10n.edit),
-              style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 12)),
+            child: _buildStandardActionButton(
+              icon: Icons.delete_outline_rounded,
+              label: l10n.delete,
+              onTap: _handleDelete,
+              color: theme.colorScheme.error,
+              theme: theme,
             ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _buildStandardActionButton(
+              icon: Icons.share_outlined,
+              label: 'Share',
+              onTap: _handleShare,
+              color: const Color(0xFF6366F1),
+              theme: theme,
+              isLoading: false, // Loading is now shown globally
+            ),
+          ),
+          const SizedBox(width: 8),
+          _buildStandardActionButton(
+            icon: Icons.print_outlined,
+            onTap: _handlePrint,
+            color: Colors.teal,
+            theme: theme,
+            isLoading: false, // Loading is now shown globally
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildStandardActionButton({
+    required IconData icon,
+    required VoidCallback onTap,
+    required Color color,
+    required ThemeData theme,
+    String? label,
+    bool isLoading = false,
+  }) {
+    return Container(
+      height: 52,
+      width: label == null ? 52 : null,
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: color.withOpacity(0.15)),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: isLoading ? null : onTap,
+          borderRadius: BorderRadius.circular(14),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (isLoading)
+                  SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(color),
+                    ),
+                  )
+                else
+                  Icon(icon, color: color, size: 20),
+                if (label != null) ...[
+                  const SizedBox(width: 4),
+                  Flexible(
+                    child: Text(
+                      label,
+                      style: TextStyle(
+                        color: color,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

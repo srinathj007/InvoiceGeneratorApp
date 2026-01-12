@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:invoice_gen_app/l10n/app_localizations.dart';
 import '../core/theme.dart';
+import '../main.dart';
 import 'create_invoice_screen.dart';
 import 'login_screen.dart';
 import '../services/supabase_service.dart';
@@ -9,6 +10,7 @@ import '../services/profile_service.dart';
 import '../services/invoice_service.dart';
 import '../models/invoice.dart';
 import 'invoice_detail_screen.dart';
+import '../widgets/invoice_tile.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -35,9 +37,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState();
     _loadData();
+    businessProvider.addListener(_onBusinessChanged);
+  }
+
+  void _onBusinessChanged() {
+    if (mounted) {
+      _loadData();
+    }
+  }
+
+  @override
+  void dispose() {
+    businessProvider.removeListener(_onBusinessChanged);
+    super.dispose();
+  }
+  
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Refresh data when returning to this screen
+    if (mounted && !_isLoading) {
+      _loadData();
+    }
   }
 
   Future<void> _loadData() async {
+    setState(() => _isLoading = true);
     try {
       final profile = await _profileService.getProfile();
       final invoices = await _invoiceService.getRecentInvoices();
@@ -188,17 +213,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ],
                     ),
                   ),
-                  IconButton(
-                    onPressed: _handleLogout,
-                    icon: Icon(Icons.logout, color: theme.colorScheme.error),
-                  ),
                 ],
               ),
             ),
             
                     // HERO SECTION (Refactored Premium UI)
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(24),
@@ -256,14 +277,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   ),
                                 ),
                                 const SizedBox(height: 4),
-                                Container(
-                                  height: 3,
-                                  width: 40,
-                                  decoration: BoxDecoration(
-                                    color: theme.colorScheme.secondaryContainer.withOpacity(0.5),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                ),
                               ],
                             ),
                             // Annual/Monthly Toggle
@@ -315,21 +328,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ],
                         ),
                         const SizedBox(height: 12),
-                        // Small trend indicator
-                        Row(
-                          children: [
-                            Icon(Icons.trending_up, color: Colors.greenAccent[100], size: 16),
-                            const SizedBox(width: 6),
-                            Text(
-                              l10n.realTimeData,
-                              style: TextStyle(
-                                color: Colors.white.withOpacity(0.8),
-                                fontSize: 12,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                          ],
-                        ),
+
                       ],
                     ),
                   ],
@@ -337,46 +336,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
 
-            // QUICK ACTIONS (Fixed)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _buildActionButton(
-                      context,
-                      l10n.newInvoice,
-                      Icons.add,
-                      theme.colorScheme.primary,
-                      () async {
-                        final result = await Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const CreateInvoiceScreen()),
-                        );
-                        if (result == true) {
-                          _loadData();
-                          _fetchRevenue();
-                        }
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildActionButton(
-                      context,
-                      l10n.clients,
-                      Icons.people_alt_outlined,
-                      Colors.purple,
-                      () {
-                        AppTheme.showToast(context, 'Client Management Coming Soon');
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 24),
+            const SizedBox(height: 8),
 
             // RECENT ACTIVITY HEADER (Fixed)
             Padding(
@@ -403,14 +363,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   : ListView.separated(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       itemCount: _recentInvoices.length,
-                      separatorBuilder: (context, index) => Divider(
-                        height: 1,
-                        indent: 60,
-                        endIndent: 16,
-                        color: theme.colorScheme.outlineVariant.withOpacity(0.3),
-                      ),
+                      separatorBuilder: (context, index) => const SizedBox(height: 4),
                       itemBuilder: (context, index) {
-                        return _buildRecentInvoiceItem(context, _recentInvoices[index]);
+                        return InvoiceTile(
+                          invoice: _recentInvoices[index],
+                          onTap: () => _showInvoiceDetailsDialog(_recentInvoices[index]),
+                        );
                       },
                     ),
             ),
@@ -472,46 +430,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildRecentInvoiceItem(BuildContext context, Invoice invoice) {
-    final theme = Theme.of(context);
-    final amount =  invoice.totalAmount;
-    final date = invoice.date;
-    
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-      leading: Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Icon(Icons.receipt_outlined, color: theme.colorScheme.primary),
-      ),
-      title: Text(
-        invoice.invoiceNumber,
-        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-      ),
-      subtitle: Text(
-        invoice.customerName,
-        style: TextStyle(color: theme.colorScheme.onSurfaceVariant, fontSize: 13),
-      ),
-      trailing: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Text(
-            '₹${amount.toStringAsFixed(0)}',
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-          ),
-          Text(
-            DateFormat('MMM dd').format(date),
-            style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurfaceVariant),
-          ),
-        ],
-      ),
-      onTap: () => _showInvoiceDetailsDialog(invoice),
-    );
-  }
+
 
   Future<void> _showInvoiceDetailsDialog(Invoice invoice) async {
     final theme = Theme.of(context);

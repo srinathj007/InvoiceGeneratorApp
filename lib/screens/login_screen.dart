@@ -5,8 +5,10 @@ import '../core/theme.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../services/supabase_service.dart';
+import '../services/profile_service.dart';
 import 'signup_screen.dart';
 import 'main_navigation.dart';
+import 'profile_screen.dart';
 import 'forgot_password_screen.dart';
 import '../widgets/responsive_layout.dart';
 
@@ -22,6 +24,36 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   final _authService = AuthService();
   bool _isLoading = false;
+  bool _isCheckingAuth = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAuth();
+  }
+
+  Future<void> _checkAuth() async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user != null) {
+      final profileService = ProfileService();
+      final profiles = await profileService.getProfiles();
+      if (mounted) {
+        if (profiles.isEmpty) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => const ProfileScreen(isNewBusiness: true, isMandatory: true),
+            ),
+          );
+        } else {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const MainNavigation()),
+          );
+        }
+      }
+    } else {
+      if (mounted) setState(() => _isCheckingAuth = false);
+    }
+  }
 
   Future<void> _handleSignIn() async {
     final email = _emailController.text.trim();
@@ -36,10 +68,26 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       await _authService.signIn(email: email, password: password);
+      
       if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const MainNavigation()),
-        );
+        // Check if user has any profiles
+        final profileService = ProfileService();
+        final profiles = await profileService.getProfiles();
+        
+        if (mounted) {
+          if (profiles.isEmpty) {
+            // No profile found - mandatory setup
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => const ProfileScreen(isNewBusiness: true, isMandatory: true),
+              ),
+            );
+          } else {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => const MainNavigation()),
+            );
+          }
+        }
       }
     } on AuthException catch (e) {
       if (mounted) {
@@ -230,6 +278,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isCheckingAuth) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
     return Scaffold(
       body: ResponsiveLayout(
         mobile: Center(

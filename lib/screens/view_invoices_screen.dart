@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:collection/collection.dart'; // For grouping
 import '../core/theme.dart';
+import '../main.dart';
 import '../models/invoice.dart';
 import '../services/invoice_service.dart';
 import '../widgets/invoice_group.dart'; // New Group Widget
@@ -53,6 +54,13 @@ class _ViewInvoicesScreenState extends State<ViewInvoicesScreen> {
     super.initState();
     _fetchInvoices();
     _scrollController.addListener(_onscroll);
+    businessProvider.addListener(_onBusinessChanged);
+  }
+
+  void _onBusinessChanged() {
+    if (mounted) {
+      _fetchInvoices(refresh: true);
+    }
   }
 
   @override
@@ -60,6 +68,7 @@ class _ViewInvoicesScreenState extends State<ViewInvoicesScreen> {
     _debounce?.cancel();
     _scrollController.dispose();
     _searchController.dispose();
+    businessProvider.removeListener(_onBusinessChanged);
     super.dispose();
   }
 
@@ -173,6 +182,7 @@ class _ViewInvoicesScreenState extends State<ViewInvoicesScreen> {
         ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      /* 
       floatingActionButton: Padding(
          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
          child: SizedBox(
@@ -202,6 +212,7 @@ class _ViewInvoicesScreenState extends State<ViewInvoicesScreen> {
           ),
         ),
       ),
+      */
       body: Column(
         children: [
            Container(
@@ -255,44 +266,72 @@ class _ViewInvoicesScreenState extends State<ViewInvoicesScreen> {
   void _showSortOptions(BuildContext context, String Function(String) getLabel) {
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      backgroundColor: Colors.transparent,
       builder: (context) {
         return Container(
-          padding: const EdgeInsets.symmetric(vertical: 20),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(24),
+              topRight: Radius.circular(24),
+            ),
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-               Padding(
-                 padding: const EdgeInsets.only(bottom: 10),
-                 child: Text(
-                    'Sort By', // Needs l10n
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                 ),
-               ),
-              ...(_sortOptions.entries).map((entry) => ListTile(
-                leading: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: _currentSort == entry.key ? Theme.of(context).colorScheme.primaryContainer : Colors.grey[100],
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.sort, 
-                    size: 20, 
-                    color: _currentSort == entry.key ? Theme.of(context).colorScheme.primary : Colors.grey,
+              // Drag Handle
+              Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 8),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              
+              // Title
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                child: const Text(
+                  'Sort By',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1F2937),
                   ),
                 ),
-                title: Text(getLabel(entry.value)),
-                trailing: _currentSort == entry.key 
-                    ? Icon(Icons.check_circle, color: Theme.of(context).colorScheme.primary) 
-                    : null,
-                onTap: () {
-                  _onSortSelected(entry.key);
-                  Navigator.pop(context);
-                },
-              )).toList(),
+              ),
+              
+              // Sort Options (Radio Style like Language Picker)
+              ..._sortOptions.entries.map((entry) {
+                final isSelected = _currentSort == entry.key;
+                return ListTile(
+                  onTap: () {
+                    _onSortSelected(entry.key);
+                    Navigator.pop(context);
+                  },
+                  title: Text(
+                    getLabel(entry.value),
+                    style: TextStyle(
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      color: isSelected ? Theme.of(context).primaryColor : const Color(0xFF1F2937),
+                    ),
+                  ),
+                  leading: Radio<String>(
+                    value: entry.key,
+                    groupValue: _currentSort,
+                    onChanged: (value) {
+                      if (value != null) {
+                        _onSortSelected(value);
+                        Navigator.pop(context);
+                      }
+                    },
+                    activeColor: Theme.of(context).primaryColor,
+                  ),
+                );
+              }).toList(),
+              const SizedBox(height: 20), // Bottom padding
             ],
           ),
         );

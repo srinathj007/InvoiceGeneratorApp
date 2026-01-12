@@ -1,6 +1,7 @@
 class Invoice {
   final String? id;
   final String userId;
+  final String profileId; // Link to specific business profile
   final String customerName;
   final String? customerPhone;
   final String? vehicleNumber;
@@ -16,6 +17,7 @@ class Invoice {
   Invoice({
     this.id,
     required this.userId,
+    required this.profileId,
     required this.customerName,
     this.customerPhone,
     this.vehicleNumber,
@@ -33,6 +35,7 @@ class Invoice {
     return Invoice(
       id: json['id'],
       userId: json['user_id'],
+      profileId: json['profile_id'],
       customerName: json['customer_name'],
       customerPhone: json['customer_phone'],
       vehicleNumber: json['vehicle_number'],
@@ -51,6 +54,7 @@ class Invoice {
     return {
       if (id != null) 'id': id,
       'user_id': userId,
+      'profile_id': profileId,
       'customer_name': customerName,
       'customer_phone': customerPhone,
       'vehicle_number': vehicleNumber,

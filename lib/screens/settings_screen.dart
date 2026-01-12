@@ -25,8 +25,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void initState() {
     super.initState();
     _loadProfile();
+    businessProvider.addListener(_onBusinessChanged);
   }
 
+  void _onBusinessChanged() {
+    if (mounted) {
+      _loadProfile();
+    }
+  }
+
+  @override
+  void dispose() {
+    businessProvider.removeListener(_onBusinessChanged);
+    super.dispose();
+  }
+  
   Future<void> _loadProfile() async {
     try {
       final profile = await _profileService.getProfile();
@@ -95,48 +108,76 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _showLanguagePicker() {
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (context) {
         return Container(
-          padding: const EdgeInsets.symmetric(vertical: 20),
+          width: double.infinity,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(24),
+              topRight: Radius.circular(24),
+            ),
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-               Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: Text(
-                  AppLocalizations.of(context)!.language,
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 8),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              _LanguageOption(
-                locale: const Locale('en'),
-                label: 'English',
-                isSelected: localeProvider.locale.languageCode == 'en',
-                onTap: () {
-                  localeProvider.setLocale(const Locale('en'));
-                  Navigator.pop(context);
-                },
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                child: Text(
+                  AppLocalizations.of(context)!.language,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1F2937),
+                  ),
+                ),
               ),
-              _LanguageOption(
-                locale: const Locale('te'),
-                label: 'Telugu',
-                isSelected: localeProvider.locale.languageCode == 'te',
-                onTap: () {
-                  localeProvider.setLocale(const Locale('te'));
-                  Navigator.pop(context);
-                },
-              ),
-              _LanguageOption(
-                locale: const Locale('hi'),
-                label: 'Hindi',
-                isSelected: localeProvider.locale.languageCode == 'hi',
-                onTap: () {
-                  localeProvider.setLocale(const Locale('hi'));
-                  Navigator.pop(context);
-                },
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+                child: Column(
+                  children: [
+                    _LanguageOption(
+                      locale: const Locale('en'),
+                      label: 'English',
+                      isSelected: localeProvider.locale.languageCode == 'en',
+                      onTap: () {
+                        localeProvider.setLocale(const Locale('en'));
+                        Navigator.pop(context);
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _LanguageOption(
+                      locale: const Locale('te'),
+                      label: 'తెలుగు (Telugu)',
+                      isSelected: localeProvider.locale.languageCode == 'te',
+                      onTap: () {
+                        localeProvider.setLocale(const Locale('te'));
+                        Navigator.pop(context);
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _LanguageOption(
+                      locale: const Locale('hi'),
+                      label: 'हिंदी (Hindi)',
+                      isSelected: localeProvider.locale.languageCode == 'hi',
+                      onTap: () {
+                        localeProvider.setLocale(const Locale('hi'));
+                        Navigator.pop(context);
+                      },
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -148,56 +189,79 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _showThemePicker() {
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (context) {
         return Container(
-          padding: const EdgeInsets.all(24),
+          width: double.infinity,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(24),
+              topRight: Radius.circular(24),
+            ),
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                'Select Theme',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 8),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
-              const SizedBox(height: 24),
-              Wrap(
-                spacing: 20,
-                runSpacing: 20,
-                alignment: WrapAlignment.center,
-                children: ThemeProvider.availableColors.map((color) {
-                  final isSelected = themeProvider.selectedColor == color;
-                  return GestureDetector(
-                    onTap: () {
-                      themeProvider.setColor(color);
-                      Navigator.pop(context);
-                    },
-                    child: Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: color,
-                        shape: BoxShape.circle,
-                        border: isSelected 
-                            ? Border.all(color: Colors.black, width: 3)
-                            : Border.all(color: Colors.grey.withOpacity(0.3), width: 1),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 5,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                child: const Text(
+                  'Select Theme',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1F2937),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+                child: Wrap(
+                  spacing: 24,
+                  runSpacing: 24,
+                  alignment: WrapAlignment.center,
+                  children: ThemeProvider.availableColors.map((color) {
+                    final isSelected = themeProvider.selectedColor == color;
+                    return GestureDetector(
+                      onTap: () {
+                        themeProvider.setColor(color);
+                        Navigator.pop(context);
+                      },
+                      child: Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          color: color,
+                          shape: BoxShape.circle,
+                          border: isSelected 
+                              ? Border.all(color: Colors.black, width: 3)
+                              : Border.all(color: Colors.grey.shade300, width: 1),
+                          boxShadow: [
+                            BoxShadow(
+                              color: color.withOpacity(0.35),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: isSelected 
+                            ? const Icon(Icons.check, color: Colors.white, size: 32)
+                            : null,
                       ),
-                      child: isSelected 
-                          ? const Icon(Icons.check, color: Colors.white, size: 30)
-                          : null,
-                    ),
-                  );
-                }).toList(),
+                    );
+                  }).toList(),
+                ),
               ),
-              const SizedBox(height: 20),
             ],
           ),
         );
@@ -211,7 +275,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final l10n = AppLocalizations.of(context)!;
     
     // Dynamic gradient based on selected theme
-    final baseColor = themeProvider.selectedColor;
+    // UPDATED: Using Theme.of(context) ensures it matches exactly what's rendered
+    final baseColor = theme.colorScheme.primary;
     final gradient = LinearGradient(
       colors: [
         baseColor.withOpacity(0.8), 

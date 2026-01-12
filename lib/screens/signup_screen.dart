@@ -6,6 +6,7 @@ import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../services/supabase_service.dart';
 import '../widgets/responsive_layout.dart';
+import 'profile_screen.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -35,14 +36,25 @@ class _SignupScreenState extends State<SignupScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await _authService.signUp(
+      final response = await _authService.signUp(
         email: email,
         password: password,
         fullName: name,
       );
       if (mounted) {
-        AppTheme.showToast(context, l10n.registrationSuccess);
-        Navigator.pop(context);
+        if (response.session != null) {
+          // Auto signed in - go to profile creation
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(
+              builder: (context) => const ProfileScreen(isNewBusiness: true, isMandatory: true),
+            ),
+            (route) => false,
+          );
+        } else {
+          // Verification required?
+          AppTheme.showToast(context, l10n.registrationSuccess);
+          Navigator.pop(context);
+        }
       }
     } on AuthException catch (e) {
       if (mounted) {

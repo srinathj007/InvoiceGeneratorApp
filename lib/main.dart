@@ -8,9 +8,11 @@ import 'screens/login_screen.dart';
 import 'providers/locale_provider.dart';
 
 import 'providers/theme_provider.dart';
+import 'providers/business_provider.dart';
 
 final localeProvider = LocaleProvider();
 final themeProvider = ThemeProvider();
+final businessProvider = BusinessProvider();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,7 +31,7 @@ class InvoiceGenApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: Listenable.merge([localeProvider, themeProvider]),
+      animation: Listenable.merge([localeProvider, themeProvider, businessProvider]),
       builder: (context, child) {
         return MaterialApp(
           title: 'Invoice Generator',

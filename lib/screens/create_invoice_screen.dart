@@ -10,6 +10,7 @@ import 'package:invoice_gen_app/l10n/app_localizations.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/responsive_layout.dart';
+import 'invoice_detail_screen.dart';
 
 class CreateInvoiceScreen extends StatefulWidget {
   final Invoice? invoiceToEdit;
@@ -154,6 +155,11 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
       AppTheme.showToast(context, l10n.noItemsAdded, isError: true);
       return;
     }
+    
+    if (_profile?.id == null) {
+      AppTheme.showToast(context, 'No active business profile found', isError: true);
+      return;
+    }
 
     setState(() => _isSaving = true);
     try {
@@ -163,6 +169,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
       final invoice = Invoice(
         id: widget.invoiceToEdit?.id,
         userId: userId,
+        profileId: _profile!.id!, // Link to active business profile
         customerName: _customerNameController.text.trim(),
         customerPhone: _customerPhoneController.text.trim(),
         vehicleNumber: _vehicleNumberController.text.trim(),
@@ -173,18 +180,31 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
         isDiscountTotalPercentage: _isGlobalDiscountPercentage,
         gstPercentage: double.tryParse(_gstController.text) ?? 0,
         totalAmount: _grandTotal,
+        items: _items,
       );
 
       if (widget.invoiceToEdit != null) {
         await _invoiceService.updateInvoice(invoice, _items);
-        if (mounted) AppTheme.showToast(context, l10n.invoiceUpdated);
+        if (mounted) {
+          // Navigate to invoice detail page after update
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => InvoiceDetailScreen(invoice: invoice),
+            ),
+          );
+        }
       } else {
         await _invoiceService.createInvoice(invoice, _items);
-        if (mounted) AppTheme.showToast(context, l10n.invoiceSaved);
-      }
-
-      if (mounted) {
-        Navigator.pop(context, true);
+        if (mounted) {
+          // Navigate to invoice detail page after create
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => InvoiceDetailScreen(invoice: invoice),
+            ),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {

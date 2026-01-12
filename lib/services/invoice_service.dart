@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/invoice.dart';
+import 'profile_service.dart';
 
 class InvoiceService {
   static final InvoiceService _instance = InvoiceService._internal();
@@ -7,6 +8,7 @@ class InvoiceService {
   InvoiceService._internal();
 
   final SupabaseClient _supabase = Supabase.instance.client;
+  final ProfileService _profileService = ProfileService();
 
   Future<void> createInvoice(Invoice invoice, List<InvoiceItem> items) async {
     final user = _supabase.auth.currentUser;
@@ -105,13 +107,15 @@ class InvoiceService {
   }
 
   Future<List<Invoice>> getRecentInvoices() async {
-    final user = _supabase.auth.currentUser;
-    if (user == null) return [];
+    final profile = await _profileService.getProfile();
+    if (profile?.id == null) {
+      return [];
+    }
 
     final response = await _supabase
         .from('invoices')
         .select('*, invoice_items(*)')
-        .eq('user_id', user.id)
+        .eq('profile_id', profile!.id!)
         .order('created_at', ascending: false)
         .limit(10);
 
@@ -138,13 +142,13 @@ class InvoiceService {
     int page = 0,
     int pageSize = 10,
   }) async {
-    final user = _supabase.auth.currentUser;
-    if (user == null) return [];
+    final profile = await _profileService.getProfile();
+    if (profile?.id == null) return [];
 
     dynamic query = _supabase
         .from('invoices')
         .select()
-        .eq('user_id', user.id);
+        .eq('profile_id', profile!.id!);
 
     // Global Search (Mobile)
     if (searchQuery != null && searchQuery.isNotEmpty) {
@@ -193,13 +197,13 @@ class InvoiceService {
   }
 
   Future<double> getTotalRevenue({DateTime? startDate, DateTime? endDate}) async {
-    final user = _supabase.auth.currentUser;
-    if (user == null) return 0;
+    final profile = await _profileService.getProfile();
+    if (profile?.id == null) return 0;
 
     var query = _supabase
         .from('invoices')
         .select('total_amount')
-        .eq('user_id', user.id);
+        .eq('profile_id', profile!.id!);
 
     if (startDate != null) {
       query = query.gte('invoice_date', startDate.toIso8601String().split('T')[0]);

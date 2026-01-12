@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'main_navigation.dart';
 import 'package:image_picker/image_picker.dart';
 import '../core/theme.dart';
 import '../models/business_profile.dart';
@@ -10,7 +11,13 @@ import '../widgets/responsive_layout.dart';
 import 'package:invoice_gen_app/l10n/app_localizations.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+  final bool isNewBusiness;
+  final bool isMandatory;
+  const ProfileScreen({
+    super.key, 
+    this.isNewBusiness = false,
+    this.isMandatory = false,
+  });
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -45,7 +52,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _loadProfile();
+    if (widget.isNewBusiness) {
+      _isLoading = false; 
+      // Start with empty form for new business
+    } else {
+      _loadProfile();
+    }
   }
 
   Future<void> _loadProfile() async {
@@ -71,6 +83,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         });
       }
     } catch (e) {
+      // ... same error handling
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
         AppTheme.showToast(context, l10n.errorLoadingProfile, isError: true);
@@ -96,8 +109,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         AppTheme.showToast(context, l10n.userSessionExpired, isError: true);
         return;
       }
+      
+      // If isNewBusiness is true, ensure ID is null to create new
+      final String? profileId = widget.isNewBusiness ? null : _currentProfile?.id;
+
       final newProfile = BusinessProfile(
-        id: _currentProfile?.id,
+        id: profileId,
         userId: userId,
         businessName: _nameController.text.trim(),
         address: _addressController.text.trim(),
@@ -115,12 +132,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
 
       await _profileService.saveProfile(newProfile);
+      
       if (mounted) {
         AppTheme.showToast(context, l10n.profileSaved);
+        if (widget.isMandatory) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const MainNavigation()),
+            (route) => false,
+          );
+        } else {
+          Navigator.pop(context, true); // Return success
+        }
       }
     } catch (e) {
       if (mounted) {
-        AppTheme.showToast(context, l10n.errorSaving, isError: true);
+        // Show specific error for debugging
+        AppTheme.showToast(context, 'Error: $e', isError: true);
       }
     } finally {
       if (mounted) {
@@ -180,7 +207,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         const SizedBox(height: 20),
         CustomTextField(
           controller: _nameController,
-          label: l10n.businessName,
+          label: '${l10n.businessName} *',
           hint: l10n.enterBusinessName,
           prefixIcon: Icons.storefront_outlined,
         ),
@@ -352,27 +379,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.profileSettings),
-        titleTextStyle: Theme.of(context).textTheme.headlineSmall?.copyWith(
-          fontWeight: FontWeight.bold,
-          color: Theme.of(context).colorScheme.onSurface,
+    return PopScope(
+      canPop: !widget.isMandatory,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(widget.isMandatory ? l10n.createAccount : l10n.profileSettings),
+          automaticallyImplyLeading: !widget.isMandatory,
+          titleTextStyle: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+          centerTitle: false,
         ),
-        centerTitle: false,
-      ),
-      body: ResponsiveLayout(
-        mobile: _isLoading 
-          ? const Center(child: CircularProgressIndicator())
-          : Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 500),
-                  child: _buildProfileForm(),
+        body: ResponsiveLayout(
+          mobile: _isLoading 
+            ? const Center(child: CircularProgressIndicator())
+            : Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 500),
+                    child: _buildProfileForm(),
+                  ),
                 ),
               ),
-            ),
+        ),
       ),
     );
   }

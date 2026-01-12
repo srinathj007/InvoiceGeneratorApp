@@ -9,7 +9,6 @@ import '../models/invoice.dart';
 import '../models/business_profile.dart';
 
 class PdfService {
-  pw.Font? _symbolFont;
 
   // ---------------- LOADERS ----------------
 
@@ -33,18 +32,12 @@ class PdfService {
     return null;
   }
 
-  Future<pw.Font?> _loadFont(String url) async {
-    try {
-      final res = await http.get(Uri.parse(url));
-      if (res.statusCode == 200) {
-        return pw.Font.ttf(res.bodyBytes.buffer.asByteData());
-      }
-    } catch (_) {}
-    return null;
+  Future<pw.Font> _loadAssetFont(String path) async {
+    final data = await rootBundle.load(path);
+    return pw.Font.ttf(data.buffer.asByteData());
   }
 
-  String _formatCurrency(double v) =>
-      _symbolFont != null ? "₹${v.toStringAsFixed(2)}" : "Rs. ${v.toStringAsFixed(2)}";
+  String _formatCurrency(double v) => "Rs. ${v.toStringAsFixed(2)}";
 
   // ---------------- MAIN ----------------
 
@@ -59,10 +52,6 @@ class PdfService {
     final logoMR = await _loadNetworkImage(profile.customLogo4Url);
     final signature = await _loadNetworkImage(profile.signatureUrl);
 
-    _symbolFont = await _loadFont(
-      'https://fonts.gstatic.com/s/notosans/v30/6qU377HOo8iXWjrnXihlhf9_pByOAt7_oEjm.ttf',
-    );
-
     final pdf = pw.Document();
 
     pdf.addPage(
@@ -73,7 +62,6 @@ class PdfService {
           theme: pw.ThemeData.withFont(
             base: pw.Font.times(),
             bold: pw.Font.timesBold(),
-            fontFallback: _symbolFont != null ? [_symbolFont!] : [],
           ),
           buildBackground: (context) => _buildWatermark(profile),
         ),
