@@ -25,7 +25,6 @@ class ProfileService {
       final list = response as List;
       return list.map((e) => BusinessProfile.fromJson(e)).toList();
     } catch (e) {
-      print('Error fetching profiles: $e');
       return [];
     }
   }
@@ -106,7 +105,6 @@ class ProfileService {
       return publicUrl;
     } catch (e) {
       if (e is StorageException) {
-        print('Storage error message: ${e.message}');
       }
       return null;
     }

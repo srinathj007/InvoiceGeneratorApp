@@ -21,7 +21,6 @@ class BusinessProvider extends ChangeNotifier {
     try {
       _activeProfile = await _profileService.getProfile();
     } catch (e) {
-      print('Error loading active profile: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
