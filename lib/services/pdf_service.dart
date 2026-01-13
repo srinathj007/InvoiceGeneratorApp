@@ -130,9 +130,15 @@ class PdfService {
           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
           children: [
             pw.Container(width: 70, height: 40, child: tl != null ? pw.Image(tl) : null),
-            pw.Text(
-              p.businessName.toUpperCase(),
-              style: pw.TextStyle(font: b, fontSize: 28),
+            pw.Expanded(
+              child: pw.Center(
+                child: pw.FittedBox(
+                  child: pw.Text(
+                    p.businessName.toUpperCase(),
+                    style: pw.TextStyle(font: b, fontSize: 28),
+                  ),
+                ),
+              ),
             ),
             pw.Container(width: 70, height: 40, child: tr != null ? pw.Image(tr) : null),
           ],
@@ -420,6 +426,13 @@ pw.Widget _buildSignatures(
 }
 
   pw.Widget _buildWatermark(BusinessProfile profile) {
+    // Dynamic font size for watermark to prevent cutting on long names
+    double fontSize = 80;
+    if (profile.businessName.length > 15) {
+      fontSize = (80 * 15) / profile.businessName.length;
+      if (fontSize < 35) fontSize = 35; // Don't go too small
+    }
+
     return pw.Stack(
       children: [
         pw.Positioned(
@@ -433,7 +446,7 @@ pw.Widget _buildSignatures(
                 profile.businessName,
                 style: pw.TextStyle(
                   font: pw.Font.timesBold(),
-                  fontSize: 80,
+                  fontSize: fontSize,
                   letterSpacing: 2,
                   color: PdfColor.fromInt(0xFFFF6F6F), // light red
                 ),
