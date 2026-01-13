@@ -19,19 +19,19 @@ class _SignupScreenState extends State<SignupScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
   final _authService = AuthService();
   bool _isLoading = false;
 
   Future<void> _handleSignUp() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
     final name = _nameController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
     final l10n = AppLocalizations.of(context)!;
-
-    if (name.isEmpty || email.isEmpty || password.isEmpty) {
-      _showError(l10n.fillAllFields);
-      return;
-    }
 
     setState(() => _isLoading = true);
 
@@ -99,12 +99,15 @@ class _SignupScreenState extends State<SignupScreen> {
 
   Widget _buildSignupForm() {
     final l10n = AppLocalizations.of(context)!;
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
+    return Form(
+      key: _formKey,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
           Center(
             child: Image.asset(
               'assets/logo_with_name.png',
@@ -137,6 +140,12 @@ class _SignupScreenState extends State<SignupScreen> {
             label: l10n.fullName,
             hint: l10n.enterName,
             prefixIcon: Icons.person_outline,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter your full name';
+              }
+              return null;
+            },
           ),
           const SizedBox(height: 16),
           CustomTextField(
@@ -145,6 +154,16 @@ class _SignupScreenState extends State<SignupScreen> {
             hint: l10n.enterEmail,
             prefixIcon: Icons.email_outlined,
             keyboardType: TextInputType.emailAddress,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter your email';
+              }
+              final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+              if (!emailRegex.hasMatch(value)) {
+                return 'Please enter a valid email address';
+              }
+              return null;
+            },
           ),
           const SizedBox(height: 16),
           CustomTextField(
@@ -153,6 +172,15 @@ class _SignupScreenState extends State<SignupScreen> {
             hint: l10n.createPassword,
             prefixIcon: Icons.lock_outline,
             isPassword: true,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please create a password';
+              }
+              if (value.length < 6) {
+                return 'Password must be at least 6 characters';
+              }
+              return null;
+            },
           ),
           
           const SizedBox(height: 24),
@@ -185,6 +213,7 @@ class _SignupScreenState extends State<SignupScreen> {
             ],
           ),
         ],
+        ),
       ),
     );
   }

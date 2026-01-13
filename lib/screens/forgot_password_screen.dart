@@ -16,17 +16,17 @@ class ForgotPasswordScreen extends StatefulWidget {
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _emailController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
   final _authService = AuthService();
   bool _isLoading = false;
 
   Future<void> _handleResetPassword() async {
-    final email = _emailController.text.trim();
-    final l10n = AppLocalizations.of(context)!;
-
-    if (email.isEmpty) {
-      _showToast(l10n.enterEmailAddress, isError: true);
+    if (!_formKey.currentState!.validate()) {
       return;
     }
+
+    final email = _emailController.text.trim();
+    final l10n = AppLocalizations.of(context)!;
 
     setState(() => _isLoading = true);
 
@@ -61,12 +61,15 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   Widget _buildResetForm() {
     final l10n = AppLocalizations.of(context)!;
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
+    return Form(
+      key: _formKey,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
           Center(
             child: Image.asset(
               'assets/logo_with_name.png',
@@ -100,6 +103,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             hint: 'name@example.com',
             prefixIcon: Icons.email_outlined,
             keyboardType: TextInputType.emailAddress,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter your email';
+              }
+              final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+              if (!emailRegex.hasMatch(value)) {
+                return 'Please enter a valid email address';
+              }
+              return null;
+            },
           ),
           const SizedBox(height: 32),
           _isLoading
@@ -127,6 +140,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             ],
           ),
         ],
+        ),
       ),
     );
   }

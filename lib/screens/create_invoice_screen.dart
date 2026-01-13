@@ -48,6 +48,8 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
 
   final List<InvoiceItem> _items = [];
   bool _isSaving = false;
+  final _customerFormKey = GlobalKey<FormState>();
+  final _itemFormKey = GlobalKey<FormState>();
 
   // FocusNodes for "Clear on Focus" logic
   final _qtyFocus = FocusNode();
@@ -147,8 +149,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
 
   Future<void> _saveInvoice() async {
     final l10n = AppLocalizations.of(context)!;
-    if (_customerNameController.text.isEmpty) {
-      AppTheme.showToast(context, '${l10n.customerName} is required', isError: true);
+    if (!_customerFormKey.currentState!.validate()) {
       return;
     }
     if (_items.isEmpty) {
@@ -218,15 +219,14 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
   }
 
   void _addItem() {
+    if (!_itemFormKey.currentState!.validate()) {
+      return;
+    }
+
     final name = _itemNameController.text.trim();
     final qty = double.tryParse(_itemQuantityController.text) ?? 0;
     final price = double.tryParse(_itemPriceController.text) ?? 0;
     final discount = double.tryParse(_itemDiscountController.text) ?? 0;
-
-    if (name.isEmpty || qty <= 0 || price <= 0) {
-      AppTheme.showToast(context, 'Please enter valid item details', isError: true);
-      return;
-    }
 
     double amount;
     if (_isItemDiscountPercentage) {
@@ -381,63 +381,67 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
     final customLabel = (_profile?.customFieldLabel?.isNotEmpty == true) ? _profile!.customFieldLabel! : 'Reference No';
     final customHint = (_profile?.customFieldPlaceholder?.isNotEmpty == true) ? _profile!.customFieldPlaceholder! : 'Enter detail...';
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.person_outline, size: 20, color: Theme.of(context).colorScheme.primary),
-                const SizedBox(width: 8),
-                Text(l10n.customerDetails, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-              ],
-            ),
-            const SizedBox(height: 16),
-            CustomTextField(
-              controller: _customerNameController,
-              label: l10n.customerName,
-              hint: l10n.enterCustomerName,
-              prefixIcon: Icons.person_outline,
-            ),
-            const SizedBox(height: 12),
-            CustomTextField(
-              controller: _customerPhoneController,
-              label: l10n.mobileNumber,
-              hint: l10n.enterMobileNumber,
-              prefixIcon: Icons.phone_outlined,
-              keyboardType: TextInputType.phone,
-            ),
-            const SizedBox(height: 12),
-            CustomTextField(
-              controller: _vehicleNumberController,
-              label: customLabel,
-              hint: customHint,
-              prefixIcon: Icons.label_outline,
-            ),
-            const SizedBox(height: 16),
-            InkWell(
-              onTap: () async {
-                final date = await showDatePicker(
-                  context: context,
-                  initialDate: _selectedDate,
-                  firstDate: DateTime(2000),
-                  lastDate: DateTime(2100),
-                );
-                if (date != null) setState(() => _selectedDate = date);
-              },
-              borderRadius: BorderRadius.circular(12),
-              child: InputDecorator(
-                decoration: InputDecoration(
-                  labelText: l10n.invoiceDate,
-                  prefixIcon: const Icon(Icons.calendar_today_outlined),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                child: Text(DateFormat('dd MMM yyyy').format(_selectedDate)),
+    return Form(
+      key: _customerFormKey,
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.person_outline, size: 20, color: Theme.of(context).colorScheme.primary),
+                  const SizedBox(width: 8),
+                  Text(l10n.customerDetails, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                ],
               ),
-            ),
-          ],
+              const SizedBox(height: 16),
+              CustomTextField(
+                controller: _customerNameController,
+                label: l10n.customerName,
+                hint: l10n.enterCustomerName,
+                prefixIcon: Icons.person_outline,
+                validator: (value) => (value == null || value.isEmpty) ? 'Required' : null,
+              ),
+              const SizedBox(height: 12),
+              CustomTextField(
+                controller: _customerPhoneController,
+                label: l10n.mobileNumber,
+                hint: l10n.enterMobileNumber,
+                prefixIcon: Icons.phone_outlined,
+                keyboardType: TextInputType.phone,
+              ),
+              const SizedBox(height: 12),
+              CustomTextField(
+                controller: _vehicleNumberController,
+                label: customLabel,
+                hint: customHint,
+                prefixIcon: Icons.label_outline,
+              ),
+              const SizedBox(height: 16),
+              InkWell(
+                onTap: () async {
+                  final date = await showDatePicker(
+                    context: context,
+                    initialDate: _selectedDate,
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime(2100),
+                  );
+                  if (date != null) setState(() => _selectedDate = date);
+                },
+                borderRadius: BorderRadius.circular(12),
+                child: InputDecorator(
+                  decoration: InputDecoration(
+                    labelText: l10n.invoiceDate,
+                    prefixIcon: const Icon(Icons.calendar_today_outlined),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: Text(DateFormat('dd MMM yyyy').format(_selectedDate)),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -445,77 +449,96 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
 
   Widget _buildItemFormCard() {
     final l10n = AppLocalizations.of(context)!;
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(l10n.addItem, style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _itemNameController,
-              decoration: InputDecoration(labelText: l10n.itemName, prefixIcon: const Icon(Icons.shopping_bag_outlined)),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _itemQuantityController,
-                    focusNode: _qtyFocus,
-                    decoration: InputDecoration(labelText: l10n.qty),
-                    keyboardType: TextInputType.number,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  flex: 2,
-                  child: TextField(
-                    controller: _itemPriceController,
-                    focusNode: _priceFocus,
-                    decoration: InputDecoration(labelText: l10n.price, prefixText: '₹'),
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(l10n.discount, style: Theme.of(context).textTheme.bodySmall),
-                    _buildDiscountTypeToggle(
-                      isPercentage: _isItemDiscountPercentage,
-                      onChanged: (val) => setState(() => _isItemDiscountPercentage = val),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: _itemDiscountController,
-                  focusNode: _discountFocus,
-                  decoration: const InputDecoration(
-                    isDense: true,
-                    contentPadding: EdgeInsets.symmetric(vertical: 12),
-                  ),
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                onPressed: _addItem,
-                icon: const Icon(Icons.add),
-                label: Text(l10n.addToInvoice),
+    return Form(
+      key: _itemFormKey,
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(l10n.addItem, style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _itemNameController,
+                decoration: InputDecoration(labelText: l10n.itemName, prefixIcon: const Icon(Icons.shopping_bag_outlined)),
+                validator: (value) => (value == null || value.isEmpty) ? 'Required' : null,
               ),
-            ),
-          ],
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _itemQuantityController,
+                      focusNode: _qtyFocus,
+                      decoration: InputDecoration(labelText: l10n.qty),
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) return 'Req';
+                        if (double.tryParse(value) == null || double.parse(value) <= 0) return 'Invalid';
+                        return null;
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    flex: 2,
+                    child: TextFormField(
+                      controller: _itemPriceController,
+                      focusNode: _priceFocus,
+                      decoration: InputDecoration(labelText: l10n.price, prefixText: '₹'),
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) return 'Required';
+                        if (double.tryParse(value) == null || double.parse(value) <= 0) return 'Invalid';
+                        return null;
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(l10n.discount, style: Theme.of(context).textTheme.bodySmall),
+                      _buildDiscountTypeToggle(
+                        isPercentage: _isItemDiscountPercentage,
+                        onChanged: (val) => setState(() => _isItemDiscountPercentage = val),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    controller: _itemDiscountController,
+                    focusNode: _discountFocus,
+                    decoration: const InputDecoration(
+                      isDense: true,
+                      contentPadding: EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) return null;
+                      if (double.tryParse(value) == null || double.parse(value) < 0) return 'Invalid';
+                      return null;
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: _addItem,
+                  icon: const Icon(Icons.add),
+                  label: Text(l10n.addToInvoice),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -606,7 +629,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                 const SizedBox(width: 8),
                 SizedBox(
                   width: 55,
-                  child: TextField(
+                  child: TextFormField(
                     controller: _globalDiscountController,
                     focusNode: _globalDiscountFocus,
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -618,6 +641,11 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                     style: const TextStyle(fontSize: 13),
                     textAlign: TextAlign.end,
                     onChanged: (_) => setState(() {}),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) return null;
+                      if (double.tryParse(value) == null || double.parse(value) < 0) return 'Inv';
+                      return null;
+                    },
                   ),
                 ),
                 const Spacer(),
@@ -649,7 +677,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                 const SizedBox(width: 8),
                 SizedBox(
                   width: 55,
-                  child: TextField(
+                  child: TextFormField(
                     controller: _gstController,
                     focusNode: _gstFocus,
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -661,6 +689,11 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                     style: const TextStyle(fontSize: 13),
                     textAlign: TextAlign.end,
                     onChanged: (_) => setState(() {}),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) return null;
+                      if (double.tryParse(value) == null || double.parse(value) < 0) return 'Inv';
+                      return null;
+                    },
                   ),
                 ),
                 const Spacer(),

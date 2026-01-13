@@ -34,6 +34,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _customFieldLabelController = TextEditingController();
   final _customFieldPlaceholderController = TextEditingController();
   final _gstinController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
   
   bool _isLoading = true;
   bool _isSaving = false;
@@ -97,8 +98,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _handleSave() async {
     final l10n = AppLocalizations.of(context)!;
-    if (_nameController.text.isEmpty) {
-      AppTheme.showToast(context, l10n.businessNameRequired, isError: true);
+    if (!_formKey.currentState!.validate()) {
       return;
     }
 
@@ -196,9 +196,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildProfileForm() {
     final l10n = AppLocalizations.of(context)!;
     // Remove Card, use direct Column on Surface
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
+    return Form(
+      key: _formKey,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
         const SizedBox(height: 16),
         
         _buildSectionHeader(l10n.businessInfo),
@@ -210,6 +213,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           label: '${l10n.businessName} *',
           hint: l10n.enterBusinessName,
           prefixIcon: Icons.storefront_outlined,
+          validator: (value) => (value == null || value.isEmpty) ? l10n.businessNameRequired : null,
         ),
         CustomTextField(
           controller: _proprietorController,
@@ -279,6 +283,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
           hint: l10n.enterContactNumbers,
           prefixIcon: Icons.phone_outlined,
           keyboardType: TextInputType.phone,
+          validator: (value) {
+            if (value == null || value.isEmpty) return null;
+            // Basic validation for phone numbers (multiple allowed, so just check if it contains digits)
+            if (!RegExp(r'^[0-9, \-\+]+$').hasMatch(value)) {
+              return 'Invalid phone number format';
+            }
+            return null;
+          },
         ),
         const SizedBox(height: 20),
         CustomTextField(
@@ -297,6 +309,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
         const SizedBox(height: 24),
       ],
+      ),
     );
   }
 
@@ -403,6 +416,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
               ),
+          // Assuming desktop and tablet layouts might be added here,
+          // or the ResponsiveLayout is used for a single child.
+          // The original snippet had extra closing brackets, which are removed.
         ),
       ),
     );

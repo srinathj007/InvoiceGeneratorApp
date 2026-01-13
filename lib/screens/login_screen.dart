@@ -22,6 +22,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
   final _authService = AuthService();
   bool _isLoading = false;
   bool _isCheckingAuth = true;
@@ -56,13 +57,12 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _handleSignIn() async {
-    final email = _emailController.text.trim();
-    final password = _passwordController.text.trim();
-
-    if (email.isEmpty || password.isEmpty) {
-      _showError('Please fill in all fields');
+    if (!_formKey.currentState!.validate()) {
       return;
     }
+
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
 
     setState(() => _isLoading = true);
 
@@ -126,12 +126,15 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _buildLoginForm() {
     final l10n = AppLocalizations.of(context)!;
     
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
+    return Form(
+      key: _formKey,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
           Center(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(16),
@@ -168,6 +171,16 @@ class _LoginScreenState extends State<LoginScreen> {
             hint: l10n.enterEmail,
             prefixIcon: Icons.email_outlined,
             keyboardType: TextInputType.emailAddress,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter your email';
+              }
+              final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+              if (!emailRegex.hasMatch(value)) {
+                return 'Please enter a valid email address';
+              }
+              return null;
+            },
           ),
           const SizedBox(height: 16),
           CustomTextField(
@@ -176,6 +189,15 @@ class _LoginScreenState extends State<LoginScreen> {
             hint: l10n.enterPassword,
             prefixIcon: Icons.lock_outline,
             isPassword: true,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter your password';
+              }
+              if (value.length < 6) {
+                return 'Password must be at least 6 characters';
+              }
+              return null;
+            },
           ),
           
           Align(
@@ -237,6 +259,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ],
           ),
         ],
+        ),
       ),
     );
   }
