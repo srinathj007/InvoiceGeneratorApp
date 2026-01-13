@@ -66,16 +66,7 @@ class _SwitchBusinessScreenState extends State<SwitchBusinessScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Calculate dynamic height based on number of profiles
-    // Each card ~80px, add button ~60px, header ~80px, padding
-    final contentHeight = (_profiles.length * 92.0) + 80.0 + 80.0 + 32.0;
-    final maxHeight = MediaQuery.of(context).size.height * 0.75;
-    final modalHeight = contentHeight > maxHeight ? maxHeight : contentHeight;
-    
     return Container(
-      constraints: BoxConstraints(
-        maxHeight: modalHeight,
-      ),
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.only(
@@ -83,57 +74,67 @@ class _SwitchBusinessScreenState extends State<SwitchBusinessScreen> {
           topRight: Radius.circular(24),
         ),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Drag Handle
-          Container(
-            margin: const EdgeInsets.only(top: 12, bottom: 8),
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade300,
-              borderRadius: BorderRadius.circular(2),
-            ),
+      child: SafeArea(
+        bottom: false,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.85,
+            minHeight: 300, // Stable minimum height to prevent jumping
           ),
-          
-          // Title
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            child: Text(
-              AppLocalizations.of(context)!.switchBusiness,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1F2937),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Drag Handle
+              Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 8),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
-            ),
-          ),
-          
-          // Content (removed Divider)
-          Flexible(
-            child: _isLoading 
-                ? const Padding(
-                    padding: EdgeInsets.all(40.0),
-                    child: Center(child: CircularProgressIndicator()),
-                  )
-                : Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-                    child: ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: _profiles.length + 1,
-                      separatorBuilder: (context, index) => const SizedBox(height: 12),
-                      itemBuilder: (context, index) {
-                        if (index == _profiles.length) {
-                          return _buildAddButton(context);
-                        }
-                        return _buildProfileCard(context, _profiles[index]);
-                      },
-                    ),
+              
+              // Title
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                child: Text(
+                  AppLocalizations.of(context)!.switchBusiness,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1F2937),
                   ),
+                ),
+              ),
+              
+              // Content with AnimatedSwitcher for smooth transition
+              Flexible(
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  child: _isLoading 
+                      ? const SizedBox(
+                          height: 200,
+                          child: Center(child: CircularProgressIndicator()),
+                        )
+                      : ListView.separated(
+                          key: ValueKey(_profiles.length),
+                          shrinkWrap: true,
+                          padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+                          itemCount: _profiles.length + 1,
+                          separatorBuilder: (context, index) => const SizedBox(height: 12),
+                          itemBuilder: (context, index) {
+                            if (index == _profiles.length) {
+                              return _buildAddButton(context);
+                            }
+                            return _buildProfileCard(context, _profiles[index]);
+                          },
+                        ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

@@ -344,29 +344,29 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
           flex: 1,
           child: Container(
             color: Theme.of(context).colorScheme.surfaceContainerLow.withOpacity(0.3),
-            padding: const EdgeInsets.all(24),
-            child: Card(
-              margin: EdgeInsets.zero,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-                side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.5)),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(l10n.invoiceDetails, style: Theme.of(context).textTheme.headlineSmall),
-                    const SizedBox(height: 24),
-                    Expanded(
-                      child: _buildItemsList(isScrollable: true),
-                    ),
-                    const Divider(height: 32),
-                    _buildSummaryCard(showAsCard: false),
-                    const SizedBox(height: 24),
-                    _buildSaveButton(),
-                  ],
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Card(
+                margin: EdgeInsets.zero,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.5)),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(l10n.invoiceDetails, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 24),
+                      _buildItemsList(isScrollable: false),
+                      const Divider(height: 32),
+                      _buildSummaryCard(showAsCard: false),
+                      const SizedBox(height: 24),
+                      _buildSaveButton(),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -485,26 +485,12 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(l10n.discount, style: Theme.of(context).textTheme.bodySmall),
-                    const SizedBox(width: 8),
-                    SegmentedButton<bool>(
-                      segments: const [
-                        ButtonSegment<bool>(value: false, label: Text('₹')),
-                        ButtonSegment<bool>(value: true, label: Text('%')),
-                      ],
-                      selected: {_isItemDiscountPercentage},
-                      onSelectionChanged: (Set<bool> newSelection) {
-                        setState(() {
-                          _isItemDiscountPercentage = newSelection.first;
-                        });
-                      },
-                      showSelectedIcon: false,
-                      style: SegmentedButton.styleFrom(
-                        visualDensity: VisualDensity.compact,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        padding: EdgeInsets.zero,
-                      ),
+                    _buildDiscountTypeToggle(
+                      isPercentage: _isItemDiscountPercentage,
+                      onChanged: (val) => setState(() => _isItemDiscountPercentage = val),
                     ),
                   ],
                 ),
@@ -612,26 +598,10 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
               children: [
                 Text(l10n.discount, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13)),
                 const SizedBox(width: 4),
-                SizedBox(
-                  width: 70,
-                  child: SegmentedButton<bool>(
-                    segments: const [
-                      ButtonSegment<bool>(value: false, label: Text('₹', style: TextStyle(fontSize: 12))),
-                      ButtonSegment<bool>(value: true, label: Text('%', style: TextStyle(fontSize: 12))),
-                    ],
-                    selected: {_isGlobalDiscountPercentage},
-                    onSelectionChanged: (Set<bool> newSelection) {
-                      setState(() {
-                        _isGlobalDiscountPercentage = newSelection.first;
-                      });
-                    },
-                    showSelectedIcon: false,
-                    style: SegmentedButton.styleFrom(
-                      visualDensity: VisualDensity.compact,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      padding: EdgeInsets.zero,
-                    ),
-                  ),
+                _buildDiscountTypeToggle(
+                  isPercentage: _isGlobalDiscountPercentage,
+                  onChanged: (val) => setState(() => _isGlobalDiscountPercentage = val),
+                  compact: true,
                 ),
                 const SizedBox(width: 8),
                 SizedBox(
@@ -767,6 +737,61 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
         child: _isSaving 
           ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
           : Text(l10n.saveInvoice, style: const TextStyle(fontSize: 16)),
+      ),
+    );
+  }
+
+  Widget _buildDiscountTypeToggle({
+    required bool isPercentage, 
+    required Function(bool) onChanged,
+    bool compact = false,
+  }) {
+    final theme = Theme.of(context);
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      padding: const EdgeInsets.all(2),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildToggleOption('₹', !isPercentage, () => onChanged(false), compact),
+          _buildToggleOption('%', isPercentage, () => onChanged(true), compact),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildToggleOption(String label, bool isSelected, VoidCallback onTap, bool compact) {
+    final theme = Theme.of(context);
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: EdgeInsets.symmetric(
+          horizontal: compact ? 10 : 16, 
+          vertical: compact ? 4 : 8,
+        ),
+        decoration: BoxDecoration(
+          color: isSelected ? theme.colorScheme.primary : Colors.transparent,
+          borderRadius: BorderRadius.circular(6),
+          boxShadow: isSelected ? [
+            BoxShadow(
+              color: theme.colorScheme.primary.withOpacity(0.3),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            )
+          ] : null,
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : theme.colorScheme.onSurfaceVariant,
+            fontWeight: FontWeight.bold,
+            fontSize: compact ? 11 : 13,
+          ),
+        ),
       ),
     );
   }
