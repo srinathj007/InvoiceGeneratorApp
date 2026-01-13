@@ -130,5 +130,17 @@
   "accountExists": "ఖాతా ఇప్పటికే ఉంది. బదులుగా సైన్ ఇన్ చేయడానికి ప్రయత్నించండి.",
   "dashboard": "డాష్‌బోర్డ్",
   "email": "ఇమెయిల్",
-  "userSessionExpired": "వినియోగదారు సెషన్ గడువు ముగిసింది"
+  "userSessionExpired": "వినియోగదారు సెషన్ గడువు ముగిసింది",
+  "switchBusiness": "వ్యాపారాన్ని మార్చు",
+  "appTheme": "యాప్ థీమ్",
+  "about": "గురించి",
+  "switchLabel": "మార్చు",
+  "developedBy": "అభివృద్ధి చేసినవారు",
+  "modifyBusinessDetails": "మీ వ్యాపార వివరాలను సవరించండి",
+  "appVersion": "యాప్ వెర్షన్",
+  "active": "క్రియాశీల",
+  "addNewBusiness": "కొత్త వ్యాపారాన్ని జోడించండి",
+  "errorLoadingBusinesses": "వ్యాపారాలను లోడ్ చేయడంలో లోపం",
+  "switchedSuccessfully": "వ్యాపారం విజయవంతంగా మార్చబడింది",
+  "errorSwitchingBusiness": "వ్యాపారాన్ని మార్చడంలో లోపం"
 }

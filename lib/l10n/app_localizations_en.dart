@@ -411,4 +411,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get userSessionExpired => 'User session expired';
+
+  @override
+  String get switchBusiness => 'Switch Business';
+
+  @override
+  String get appTheme => 'App Theme';
+
+  @override
+  String get about => 'About';
+
+  @override
+  String get switchLabel => 'Switch';
+
+  @override
+  String get developedBy => 'Developed by';
+
+  @override
+  String get modifyBusinessDetails => 'Modify your business details';
+
+  @override
+  String get appVersion => 'App Version';
+
+  @override
+  String get active => 'Active';
+
+  @override
+  String get addNewBusiness => 'Add new business';
+
+  @override
+  String get errorLoadingBusinesses => 'Error loading businesses';
+
+  @override
+  String get switchedSuccessfully => 'Switched business successfully';
+
+  @override
+  String get errorSwitchingBusiness => 'Error switching business';
 }

@@ -165,7 +165,7 @@ class _MainNavigationState extends State<MainNavigation> {
           NavigationDestination(
             icon: const Icon(Icons.store_outlined, color: Colors.grey), // Icon for Switch Business
             selectedIcon: Icon(Icons.store_rounded, color: colorScheme.primary),
-            label: 'Switch', 
+            label: l10n.switchLabel, 
           ),
           NavigationDestination(
             icon: const Icon(Icons.settings_outlined, color: Colors.grey),

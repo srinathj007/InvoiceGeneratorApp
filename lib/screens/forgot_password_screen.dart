@@ -68,14 +68,19 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Center(
-            child: Container(
-              height: 64,
-              width: 64,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary,
-                borderRadius: BorderRadius.circular(16),
+            child: Image.asset(
+              'assets/logo_with_name.png',
+              height: 60,
+              width: 200,
+              errorBuilder: (context, error, stackTrace) => Container(
+                height: 64,
+                width: 64,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Icon(Icons.lock_reset_outlined, color: Colors.white, size: 32),
               ),
-              child: const Icon(Icons.lock_reset_outlined, color: Colors.white, size: 32),
             ),
           ),
           const SizedBox(height: 24),
@@ -85,14 +90,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.bold,
               color: Theme.of(context).colorScheme.onSurface,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            l10n.recoveryInstructions,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 32),

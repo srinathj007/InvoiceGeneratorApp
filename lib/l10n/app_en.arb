@@ -130,5 +130,17 @@
   "accountExists": "Account already exists. Try signing in instead.",
   "dashboard": "Dashboard",
   "email": "Email",
-  "userSessionExpired": "User session expired"
+  "userSessionExpired": "User session expired",
+  "switchBusiness": "Switch Business",
+  "appTheme": "App Theme",
+  "about": "About",
+  "switchLabel": "Switch",
+  "developedBy": "Developed by",
+  "modifyBusinessDetails": "Modify your business details",
+  "appVersion": "App Version",
+  "active": "Active",
+  "addNewBusiness": "Add new business",
+  "errorLoadingBusinesses": "Error loading businesses",
+  "switchedSuccessfully": "Switched business successfully",
+  "errorSwitchingBusiness": "Error switching business"
 }

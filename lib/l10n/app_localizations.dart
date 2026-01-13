@@ -891,6 +891,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'User session expired'**
   String get userSessionExpired;
+
+  /// No description provided for @switchBusiness.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch Business'**
+  String get switchBusiness;
+
+  /// No description provided for @appTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'App Theme'**
+  String get appTheme;
+
+  /// No description provided for @about.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get about;
+
+  /// No description provided for @switchLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch'**
+  String get switchLabel;
+
+  /// No description provided for @developedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Developed by'**
+  String get developedBy;
+
+  /// No description provided for @modifyBusinessDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Modify your business details'**
+  String get modifyBusinessDetails;
+
+  /// No description provided for @appVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'App Version'**
+  String get appVersion;
+
+  /// No description provided for @active.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get active;
+
+  /// No description provided for @addNewBusiness.
+  ///
+  /// In en, this message translates to:
+  /// **'Add new business'**
+  String get addNewBusiness;
+
+  /// No description provided for @errorLoadingBusinesses.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading businesses'**
+  String get errorLoadingBusinesses;
+
+  /// No description provided for @switchedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Switched business successfully'**
+  String get switchedSuccessfully;
+
+  /// No description provided for @errorSwitchingBusiness.
+  ///
+  /// In en, this message translates to:
+  /// **'Error switching business'**
+  String get errorSwitchingBusiness;
 }
 
 class _AppLocalizationsDelegate

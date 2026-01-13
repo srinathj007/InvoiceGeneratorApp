@@ -8,6 +8,7 @@ import 'login_screen.dart';
 import '../core/theme.dart';
 import '../main.dart'; // Access localeProvider and themeProvider
 import '../providers/theme_provider.dart';
+import 'about_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -192,6 +193,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
+        final l10n = AppLocalizations.of(context)!;
         return Container(
           width: double.infinity,
           decoration: const BoxDecoration(
@@ -215,9 +217,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                child: const Text(
-                  'Select Theme',
-                  style: TextStyle(
+                child: Text(
+                  l10n.appTheme,
+                  style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF1F2937),
@@ -417,7 +419,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           icon: Icons.edit_outlined,
                           iconColor: Colors.blue,
                           title: l10n.editProfile,
-                          subtitle: 'Modify your business details',
+                          subtitle: l10n.modifyBusinessDetails,
                           onTap: () {
                             Navigator.push(
                               context,
@@ -441,7 +443,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         _SettingsTile(
                           icon: Icons.color_lens_outlined,
                           iconColor: baseColor, // Dynamic color
-                          title: 'App Theme',
+                          title: l10n.appTheme,
                           trailing: Container(
                             width: 24,
                             height: 24,
@@ -457,10 +459,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         _SettingsTile(
                           icon: Icons.info_outline,
                           iconColor: Colors.grey,
-                          title: 'About',
-                          subtitle: 'App Version 1.0.0',
-                          onTap: () {}, 
-                          showArrow: false,
+                          title: l10n.about,
+                          subtitle: '${l10n.appVersion} 1.0.0+1',
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const AboutScreen()),
+                            );
+                          }, 
+                          showArrow: true,
                         ),
                       ],
                     ),

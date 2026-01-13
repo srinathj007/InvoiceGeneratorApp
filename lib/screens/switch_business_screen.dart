@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:invoice_gen_app/l10n/app_localizations.dart';
 import '../models/business_profile.dart';
 import '../services/profile_service.dart';
 import '../screens/main_navigation.dart';
@@ -41,22 +42,24 @@ class _SwitchBusinessScreenState extends State<SwitchBusinessScreen> {
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         setState(() => _isLoading = false);
-        AppTheme.showToast(context, 'Error loading businesses', isError: true);
+        AppTheme.showToast(context, l10n.errorLoadingBusinesses, isError: true);
       }
     }
   }
 
   Future<void> _switchBusiness(String id) async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       await businessProvider.setActiveProfile(id);
       if (mounted) {
-        AppTheme.showToast(context, 'Switched business successfully');
+        AppTheme.showToast(context, l10n.switchedSuccessfully);
         Navigator.pop(context, true);
       }
     } catch (e) {
       if (mounted) {
-        AppTheme.showToast(context, 'Error switching business', isError: true);
+        AppTheme.showToast(context, l10n.errorSwitchingBusiness, isError: true);
       }
     }
   }
@@ -97,9 +100,9 @@ class _SwitchBusinessScreenState extends State<SwitchBusinessScreen> {
           // Title
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            child: const Text(
-              'Switch Business',
-              style: TextStyle(
+            child: Text(
+              AppLocalizations.of(context)!.switchBusiness,
+              style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF1F2937),
@@ -210,9 +213,9 @@ class _SwitchBusinessScreenState extends State<SwitchBusinessScreen> {
                   color: primaryColor,
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Text(
-                  'Active',
-                  style: TextStyle(
+                child: Text(
+                  AppLocalizations.of(context)!.active,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
@@ -254,7 +257,7 @@ class _SwitchBusinessScreenState extends State<SwitchBusinessScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Add new business',
+              AppLocalizations.of(context)!.addNewBusiness,
               style: TextStyle(
                 color: primaryColor,
                 fontWeight: FontWeight.w600,

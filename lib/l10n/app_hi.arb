@@ -130,5 +130,17 @@
   "accountExists": "खाता पहले से मौजूद है। इसके बजाय साइन इन करने का प्रयास करें।",
   "dashboard": "डैशबोर्ड",
   "email": "ईमेल",
-  "userSessionExpired": "उपयोगकर्ता सत्र समाप्त हो गया"
+  "userSessionExpired": "उपयोगकर्ता सत्र समाप्त हो गया",
+  "switchBusiness": "व्यापार बदलें",
+  "appTheme": "ऐप थीम",
+  "about": "के बारे में",
+  "switchLabel": "बदलें",
+  "developedBy": "द्वारा विकसित",
+  "modifyBusinessDetails": "अपना व्यापार विवरण संशोधित करें",
+  "appVersion": "ऐप संस्करण",
+  "active": "सक्रिय",
+  "addNewBusiness": "नया व्यापार जोड़ें",
+  "errorLoadingBusinesses": "व्यापार लोड करने में त्रुटि",
+  "switchedSuccessfully": "व्यापार सफलतापूर्वक बदल दिया गया",
+  "errorSwitchingBusiness": "व्यापार बदलने में त्रुटि"
 }

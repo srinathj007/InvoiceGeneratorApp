@@ -415,4 +415,40 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get userSessionExpired => 'వినియోగదారు సెషన్ గడువు ముగిసింది';
+
+  @override
+  String get switchBusiness => 'వ్యాపారాన్ని మార్చు';
+
+  @override
+  String get appTheme => 'యాప్ థీమ్';
+
+  @override
+  String get about => 'గురించి';
+
+  @override
+  String get switchLabel => 'మార్చు';
+
+  @override
+  String get developedBy => 'అభివృద్ధి చేసినవారు';
+
+  @override
+  String get modifyBusinessDetails => 'మీ వ్యాపార వివరాలను సవరించండి';
+
+  @override
+  String get appVersion => 'యాప్ వెర్షన్';
+
+  @override
+  String get active => 'క్రియాశీల';
+
+  @override
+  String get addNewBusiness => 'కొత్త వ్యాపారాన్ని జోడించండి';
+
+  @override
+  String get errorLoadingBusinesses => 'వ్యాపారాలను లోడ్ చేయడంలో లోపం';
+
+  @override
+  String get switchedSuccessfully => 'వ్యాపారం విజయవంతంగా మార్చబడింది';
+
+  @override
+  String get errorSwitchingBusiness => 'వ్యాపారాన్ని మార్చడంలో లోపం';
 }

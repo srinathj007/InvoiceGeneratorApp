@@ -240,7 +240,7 @@ class _ViewInvoicesScreenState extends State<ViewInvoicesScreen> {
                     enabledBorder: InputBorder.none,
                     errorBorder: InputBorder.none,
                     disabledBorder: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18), // Let TextAlignVertical handle vertical centering
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14), // Let TextAlignVertical handle vertical centering
                   ),
                   onChanged: (value) {
                      if (_debounce?.isActive ?? false) _debounce!.cancel();

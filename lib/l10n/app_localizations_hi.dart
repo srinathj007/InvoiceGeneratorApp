@@ -413,4 +413,40 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get userSessionExpired => 'उपयोगकर्ता सत्र समाप्त हो गया';
+
+  @override
+  String get switchBusiness => 'व्यापार बदलें';
+
+  @override
+  String get appTheme => 'ऐप थीम';
+
+  @override
+  String get about => 'के बारे में';
+
+  @override
+  String get switchLabel => 'बदलें';
+
+  @override
+  String get developedBy => 'द्वारा विकसित';
+
+  @override
+  String get modifyBusinessDetails => 'अपना व्यापार विवरण संशोधित करें';
+
+  @override
+  String get appVersion => 'ऐप संस्करण';
+
+  @override
+  String get active => 'सक्रिय';
+
+  @override
+  String get addNewBusiness => 'नया व्यापार जोड़ें';
+
+  @override
+  String get errorLoadingBusinesses => 'व्यापार लोड करने में त्रुटि';
+
+  @override
+  String get switchedSuccessfully => 'व्यापार सफलतापूर्वक बदल दिया गया';
+
+  @override
+  String get errorSwitchingBusiness => 'व्यापार बदलने में त्रुटि';
 }
