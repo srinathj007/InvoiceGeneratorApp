@@ -185,24 +185,24 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
       );
 
       if (widget.invoiceToEdit != null) {
-        await _invoiceService.updateInvoice(invoice, _items);
+        final updatedInvoice = await _invoiceService.updateInvoice(invoice, _items);
         if (mounted) {
           // Navigate to invoice detail page after update
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => InvoiceDetailScreen(invoice: invoice),
+              builder: (context) => InvoiceDetailScreen(invoice: updatedInvoice),
             ),
           );
         }
       } else {
-        await _invoiceService.createInvoice(invoice, _items);
+        final createdInvoice = await _invoiceService.createInvoice(invoice, _items);
         if (mounted) {
           // Navigate to invoice detail page after create
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => InvoiceDetailScreen(invoice: invoice),
+              builder: (context) => InvoiceDetailScreen(invoice: createdInvoice),
             ),
           );
         }
@@ -293,9 +293,11 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
           ),
         ],
       ),
-      body: ResponsiveLayout(
-        mobile: _buildCompactLayout(),
-        tablet: _buildSplitLayout(),
+      body: SafeArea(
+        child: ResponsiveLayout(
+          mobile: _buildCompactLayout(),
+          tablet: _buildSplitLayout(),
+        ),
       ),
     );
   }

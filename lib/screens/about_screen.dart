@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:invoice_gen_app/l10n/app_localizations.dart';
+import '../widgets/app_logo.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -9,7 +10,7 @@ class AboutScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: Text('${l10n.about} ManaBill'),
+        title: const Text('About ManaVyapar'),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -19,32 +20,13 @@ class AboutScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Logo with name and slogan
-              Image.asset(
-                'assets/logo_with_name.png',
-                width: 300,
-                errorBuilder: (context, error, stackTrace) {
-                  return const Column(
-                    children: [
-                      Icon(Icons.receipt_long, size: 100, color: Colors.blue),
-                      Text(
-                        'ManaBill',
-                        style: TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue,
-                        ),
-                      ),
-                      Text(
-                        'Simple • Free',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ],
-                  );
-                },
+              const AppLogo(size: 120, fontSize: 36),
+              const Text(
+                'Simple • Free • Secure',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey,
+                ),
               ),
               const SizedBox(height: 48),
               Text(

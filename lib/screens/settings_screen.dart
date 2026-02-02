@@ -296,214 +296,216 @@ class _SettingsScreenState extends State<SettingsScreen> {
         surfaceTintColor: Colors.transparent,
         elevation: 0,
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 1. Header Profile Card
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      gradient: gradient,
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                          color: baseColor.withOpacity(0.3),
-                          blurRadius: 10,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          height: 70,
-                          width: 70,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 2),
+      body: SafeArea(
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 1. Header Profile Card
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        gradient: gradient,
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: baseColor.withOpacity(0.3),
+                            blurRadius: 10,
+                            offset: const Offset(0, 5),
                           ),
-                          child: _profile?.logoUrl != null
-                              ? ClipOval(
-                                  child: Image.network(_profile!.logoUrl!, fit: BoxFit.cover),
-                                )
-                              : const Icon(Icons.person, size: 40, color: Colors.white),
-                        ),
-                        const SizedBox(width: 20),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                _profile?.businessName ?? 'Business Name',
-                                style: theme.textTheme.titleLarge?.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            height: 70,
+                            width: 70,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 2),
+                            ),
+                            child: _profile?.logoUrl != null
+                                ? ClipOval(
+                                    child: Image.network(_profile!.logoUrl!, fit: BoxFit.cover),
+                                  )
+                                : const Icon(Icons.person, size: 40, color: Colors.white),
+                          ),
+                          const SizedBox(width: 20),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _profile?.businessName ?? 'Business Name',
+                                  style: theme.textTheme.titleLarge?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
-                              if (_profile?.proprietor.isNotEmpty == true) ...[
-                                const SizedBox(height: 4),
-                                Row(
-                                  children: [
-                                    const Icon(Icons.person, size: 14, color: Colors.white70),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      'Prop: ${_profile!.proprietor}',
-                                      style: theme.textTheme.bodyMedium?.copyWith(
-                                        color: Colors.white.withOpacity(0.95),
-                                        fontWeight: FontWeight.w500,
+                                if (_profile?.proprietor.isNotEmpty == true) ...[
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.person, size: 14, color: Colors.white70),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        'Prop: ${_profile!.proprietor}',
+                                        style: theme.textTheme.bodyMedium?.copyWith(
+                                          color: Colors.white.withOpacity(0.95),
+                                          fontWeight: FontWeight.w500,
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                              // Added Phone and Address to header as requested
-                              if (_profile?.phoneNumbers.isNotEmpty == true) ...[
-                                const SizedBox(height: 8),
-                                Row(
-                                  children: [
-                                    const Icon(Icons.phone, size: 14, color: Colors.white70),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      _profile!.phoneNumbers,
-                                      style: theme.textTheme.bodySmall?.copyWith(
-                                        color: Colors.white.withOpacity(0.9),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                              if (_profile?.address.isNotEmpty == true) ...[
-                                const SizedBox(height: 4),
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Icon(Icons.location_on, size: 14, color: Colors.white70),
-                                    const SizedBox(width: 6),
-                                    Expanded(
-                                      child: Text(
-                                        _profile!.address,
+                                    ],
+                                  ),
+                                ],
+                                // Added Phone and Address to header as requested
+                                if (_profile?.phoneNumbers.isNotEmpty == true) ...[
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.phone, size: 14, color: Colors.white70),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        _profile!.phoneNumbers,
                                         style: theme.textTheme.bodySmall?.copyWith(
                                           color: Colors.white.withOpacity(0.9),
                                         ),
-                                        maxLines: 3,
-                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                    ),
-                                  ],
-                                ),
+                                    ],
+                                  ),
+                                ],
+                                if (_profile?.address.isNotEmpty == true) ...[
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Icon(Icons.location_on, size: 14, color: Colors.white70),
+                                      const SizedBox(width: 6),
+                                      Expanded(
+                                        child: Text(
+                                          _profile!.address,
+                                          style: theme.textTheme.bodySmall?.copyWith(
+                                            color: Colors.white.withOpacity(0.9),
+                                          ),
+                                          maxLines: 3,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ],
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 30),
-
-                  // 2. Settings Group
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Column(
-                      children: [
-                        _SettingsTile(
-                          icon: Icons.edit_outlined,
-                          iconColor: Colors.blue,
-                          title: l10n.editProfile,
-                          subtitle: l10n.modifyBusinessDetails,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const ProfileScreen()),
-                            ).then((_) => _loadProfile());
-                          },
-                        ),
-                         const _Divider(),
-                         _SettingsTile(
-                          icon: Icons.language,
-                          iconColor: Colors.purple,
-                          title: l10n.language,
-                          trailing: Text(
-                            localeProvider.locale.languageCode.toUpperCase(),
-                            style: TextStyle(color: theme.colorScheme.onSurfaceVariant, fontWeight: FontWeight.bold),
-                          ),
-                          onTap: _showLanguagePicker,
-                        ),
-                        // Business Info Tile Removed - Moved to Header
-                        const _Divider(),
-                        _SettingsTile(
-                          icon: Icons.color_lens_outlined,
-                          iconColor: baseColor, // Dynamic color
-                          title: l10n.appTheme,
-                          trailing: Container(
-                            width: 24,
-                            height: 24,
-                            decoration: BoxDecoration(
-                              color: baseColor,
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.grey.withOpacity(0.3)),
                             ),
                           ),
-                          onTap: _showThemePicker,
-                        ),
-                         const _Divider(),
-                        _SettingsTile(
-                          icon: Icons.info_outline,
-                          iconColor: Colors.grey,
-                          title: l10n.about,
-                          subtitle: '${l10n.appVersion} 1.0.0+1',
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const AboutScreen()),
-                            );
-                          }, 
-                          showArrow: true,
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-
-                  const SizedBox(height: 24),
-                  
-                  // 3. Account Group
-                  const Padding(
-                    padding: EdgeInsets.only(left: 16, bottom: 8),
-                    child: Text(
-                      'Account', 
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+                    
+                    const SizedBox(height: 30),
+  
+                    // 2. Settings Group
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Column(
+                        children: [
+                          _SettingsTile(
+                            icon: Icons.edit_outlined,
+                            iconColor: Colors.blue,
+                            title: l10n.editProfile,
+                            subtitle: l10n.modifyBusinessDetails,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const ProfileScreen()),
+                              ).then((_) => _loadProfile());
+                            },
+                          ),
+                           const _Divider(),
+                           _SettingsTile(
+                            icon: Icons.language,
+                            iconColor: Colors.purple,
+                            title: l10n.language,
+                            trailing: Text(
+                              localeProvider.locale.languageCode.toUpperCase(),
+                              style: TextStyle(color: theme.colorScheme.onSurfaceVariant, fontWeight: FontWeight.bold),
+                            ),
+                            onTap: _showLanguagePicker,
+                          ),
+                          // Business Info Tile Removed - Moved to Header
+                          const _Divider(),
+                          _SettingsTile(
+                            icon: Icons.color_lens_outlined,
+                            iconColor: baseColor, // Dynamic color
+                            title: l10n.appTheme,
+                            trailing: Container(
+                              width: 24,
+                              height: 24,
+                              decoration: BoxDecoration(
+                                color: baseColor,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.grey.withOpacity(0.3)),
+                              ),
+                            ),
+                            onTap: _showThemePicker,
+                          ),
+                           const _Divider(),
+                          _SettingsTile(
+                            icon: Icons.info_outline,
+                            iconColor: Colors.grey,
+                            title: l10n.about,
+                            subtitle: '${l10n.appVersion} 1.0.0+1',
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const AboutScreen()),
+                              );
+                            }, 
+                            showArrow: true,
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
+  
+                    const SizedBox(height: 24),
+                    
+                    // 3. Account Group
+                    const Padding(
+                      padding: EdgeInsets.only(left: 16, bottom: 8),
+                      child: Text(
+                        'Account', 
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+                      ),
                     ),
-                    child: Column(
-                      children: [
-                        _SettingsTile(
-                          icon: Icons.logout,
-                          iconColor: theme.colorScheme.onSurface,
-                          title: l10n.logout,
-                          onTap: _handleLogout,
-                        ),
-                      ],
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Column(
+                        children: [
+                          _SettingsTile(
+                            icon: Icons.logout,
+                            iconColor: theme.colorScheme.onSurface,
+                            title: l10n.logout,
+                            onTap: _handleLogout,
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-
-                  const SizedBox(height: 40),
-                ],
+  
+                    const SizedBox(height: 40),
+                  ],
+                ),
               ),
-            ),
+      ),
     );
   }
 }

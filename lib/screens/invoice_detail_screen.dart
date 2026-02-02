@@ -182,10 +182,10 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> with SingleTi
       children: [
         Scaffold(
           appBar: AppBar(
-            title: Text('#${_invoice.invoiceNumber}'),
+            title: Text('#${_invoice.invoiceNumber}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
             backgroundColor: Colors.transparent,
             elevation: 0,
-            // Removed share and print from AppBar to put them in premium bottom bar
+            iconTheme: const IconThemeData(color: Colors.white),
           ),
           extendBodyBehindAppBar: true,
           body: Stack(
@@ -212,7 +212,7 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> with SingleTi
               
               SafeArea(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 110),
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -221,16 +221,9 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> with SingleTi
                   ),
                 ),
               ),
-              
-              // Bottom Actions
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: _buildBottomActions(theme),
-              ),
             ],
           ),
+          bottomNavigationBar: _buildBottomActions(theme),
         ),
         if (_isProcessing)
           Container(

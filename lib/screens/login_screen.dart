@@ -11,6 +11,7 @@ import 'main_navigation.dart';
 import 'profile_screen.dart';
 import 'forgot_password_screen.dart';
 import '../widgets/responsive_layout.dart';
+import '../widgets/app_logo.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -128,41 +129,14 @@ class _LoginScreenState extends State<LoginScreen> {
     
     return Form(
       key: _formKey,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
+      autovalidateMode: AutovalidateMode.disabled,
       child: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-          Center(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: Image.asset(
-                'assets/logo_with_name.png',
-                height: 60,
-                width: 200,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  height: 64,
-                  width: 64,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: const Icon(Icons.account_balance_wallet_outlined, color: Colors.white, size: 32),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            l10n.welcomeBack,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-          ),
+          const AppLogo(size: 80, fontSize: 28),
           const SizedBox(height: 32),
 
           CustomTextField(
@@ -307,36 +281,38 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     }
     return Scaffold(
-      body: ResponsiveLayout(
-        mobile: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 400),
-              child: _buildLoginForm(),
+      body: SafeArea(
+        child: ResponsiveLayout(
+          mobile: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 400),
+                child: _buildLoginForm(),
+              ),
             ),
           ),
-        ),
-        tablet: Row(
-          children: [
-            Expanded(
-              child: Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(32),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 450),
-                    child: _buildLoginForm(),
+          tablet: Row(
+            children: [
+              Expanded(
+                child: Center(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(32),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 450),
+                      child: _buildLoginForm(),
+                    ),
                   ),
                 ),
               ),
-            ),
-            Expanded(
-              child: Container(
-                color: Theme.of(context).colorScheme.surfaceContainerLow,
-                child: _buildIllustration(),
+              Expanded(
+                child: Container(
+                  color: Theme.of(context).colorScheme.surfaceContainerLow,
+                  child: _buildIllustration(),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

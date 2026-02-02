@@ -34,7 +34,7 @@ class InvoiceGenApp extends StatelessWidget {
       animation: Listenable.merge([localeProvider, themeProvider, businessProvider]),
       builder: (context, child) {
         return MaterialApp(
-          title: 'ManaBill',
+          title: 'ManaVyapar',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.getTheme(themeProvider.selectedColor),
           locale: localeProvider.locale,

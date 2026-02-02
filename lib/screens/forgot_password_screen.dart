@@ -6,6 +6,7 @@ import '../widgets/custom_text_field.dart';
 import '../services/supabase_service.dart';
 import '../widgets/responsive_layout.dart';
 import 'package:invoice_gen_app/l10n/app_localizations.dart';
+import '../widgets/app_logo.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -63,30 +64,15 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     final l10n = AppLocalizations.of(context)!;
     return Form(
       key: _formKey,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
+      autovalidateMode: AutovalidateMode.disabled,
       child: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-          Center(
-            child: Image.asset(
-              'assets/logo_with_name.png',
-              height: 60,
-              width: 200,
-              errorBuilder: (context, error, stackTrace) => Container(
-                height: 64,
-                width: 64,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: const Icon(Icons.lock_reset_outlined, color: Colors.white, size: 32),
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
+          const AppLogo(size: 80, fontSize: 28),
+          const SizedBox(height: 32),
           Text(
             l10n.resetPassword,
             textAlign: TextAlign.center,
@@ -183,36 +169,38 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ResponsiveLayout(
-        mobile: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 400),
-              child: _buildResetForm(),
+      body: SafeArea(
+        child: ResponsiveLayout(
+          mobile: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 400),
+                child: _buildResetForm(),
+              ),
             ),
           ),
-        ),
-        tablet: Row(
-          children: [
-            Expanded(
-              child: Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(32),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 450),
-                    child: _buildResetForm(),
+          tablet: Row(
+            children: [
+              Expanded(
+                child: Center(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(32),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 450),
+                      child: _buildResetForm(),
+                    ),
                   ),
                 ),
               ),
-            ),
-            Expanded(
-              child: Container(
-                color: Theme.of(context).colorScheme.surfaceContainerLow,
-                child: _buildIllustration(),
+              Expanded(
+                child: Container(
+                  color: Theme.of(context).colorScheme.surfaceContainerLow,
+                  child: _buildIllustration(),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

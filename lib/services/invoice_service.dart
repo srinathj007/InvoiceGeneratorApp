@@ -10,7 +10,7 @@ class InvoiceService {
   final SupabaseClient _supabase = Supabase.instance.client;
   final ProfileService _profileService = ProfileService();
 
-  Future<void> createInvoice(Invoice invoice, List<InvoiceItem> items) async {
+  Future<Invoice> createInvoice(Invoice invoice, List<InvoiceItem> items) async {
     final user = _supabase.auth.currentUser;
     if (user == null) throw Exception('User not authenticated');
 
@@ -33,10 +33,21 @@ class InvoiceService {
       return data;
     }).toList();
 
-    await _supabase.from('invoice_items').insert(itemsData);
+    final List<InvoiceItem> createdItems = [];
+    if (itemsData.isNotEmpty) {
+      final itemsResponse = await _supabase
+          .from('invoice_items')
+          .insert(itemsData)
+          .select();
+      
+      final List responseList = itemsResponse as List;
+      createdItems.addAll(responseList.map((i) => InvoiceItem.fromJson(i)));
+    }
+
+    return Invoice.fromJson(invoiceResponse, createdItems);
   }
 
-  Future<void> updateInvoice(Invoice invoice, List<InvoiceItem> items) async {
+  Future<Invoice> updateInvoice(Invoice invoice, List<InvoiceItem> items) async {
     final user = _supabase.auth.currentUser;
     if (user == null) throw Exception('User not authenticated');
     if (invoice.id == null) throw Exception('Invoice ID required for update');
@@ -44,16 +55,17 @@ class InvoiceService {
     // 1. Update Invoice
     final invoiceData = invoice.toJson();
     invoiceData['user_id'] = user.id;
-    // Remove ID from data to avoid update error if DB handles it, though usually fine.
-    // However, we are targeting by ID, so we don't need to set it in body if we use .eq
+    // We remove the id from the patch body to be safe, as it's in the .eq filter
+    invoiceData.remove('id');
     
-    await _supabase
+    final updatedResponse = await _supabase
         .from('invoices')
         .update(invoiceData)
-        .eq('id', invoice.id!);
+        .eq('id', invoice.id!)
+        .select()
+        .single();
 
     // 2. Update Items (Delete all and re-insert)
-    // First, delete existing items
     await _supabase
         .from('invoice_items')
         .delete()
@@ -63,14 +75,22 @@ class InvoiceService {
     final List<Map<String, dynamic>> itemsData = items.map((item) {
       final data = item.toJson();
       data['invoice_id'] = invoice.id;
-      // Remove item ID if it exists to ensure new IDs are generated or handled by DB
       data.remove('id'); 
       return data;
     }).toList();
 
+    final List<InvoiceItem> createdItems = [];
     if (itemsData.isNotEmpty) {
-      await _supabase.from('invoice_items').insert(itemsData);
+      final itemsResponse = await _supabase
+          .from('invoice_items')
+          .insert(itemsData)
+          .select();
+      
+      final List responseList = itemsResponse as List;
+      createdItems.addAll(responseList.map((i) => InvoiceItem.fromJson(i)));
     }
+
+    return Invoice.fromJson(updatedResponse, createdItems);
   }
 
   Future<void> deleteInvoice(String invoiceId) async {

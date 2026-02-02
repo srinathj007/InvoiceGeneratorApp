@@ -213,52 +213,54 @@ class _ViewInvoicesScreenState extends State<ViewInvoicesScreen> {
         ),
       ),
       */
-      body: Column(
-        children: [
-           Container(
-             color: const Color(0xFFF5F7FA), // Match Background
-             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-             child: Container(
-                height: 44,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: Colors.white, // Search Bar is White
-                  borderRadius: BorderRadius.circular(50), // Pill Shape
-                  border: Border.all(color: Colors.grey.withOpacity(0.3)),
-                ),
-                child: TextField(
-                  controller: _searchController,
-                  textAlignVertical: TextAlignVertical.center,
-                  decoration: InputDecoration(
-                    filled: false, 
-                    fillColor: Colors.transparent,
-                    hintText: l10n.searchPlaceholder,
-                    hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
-                    prefixIcon: const Icon(Icons.search, size: 20, color: Colors.grey),
-                    border: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    errorBorder: InputBorder.none,
-                    disabledBorder: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14), // Let TextAlignVertical handle vertical centering
+      body: SafeArea(
+        child: Column(
+          children: [
+             Container(
+               color: const Color(0xFFF5F7FA), // Match Background
+               padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+               child: Container(
+                  height: 44,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: Colors.white, // Search Bar is White
+                    borderRadius: BorderRadius.circular(50), // Pill Shape
+                    border: Border.all(color: Colors.grey.withOpacity(0.3)),
                   ),
-                  onChanged: (value) {
-                     if (_debounce?.isActive ?? false) _debounce!.cancel();
-                     _debounce = Timer(const Duration(milliseconds: 500), () {
-                        setState(() => _searchQuery = value);
-                        _fetchInvoices(refresh: true);
-                     });
-                  },
-                  onSubmitted: (value) {
-                     if (_debounce?.isActive ?? false) _debounce!.cancel();
-                     setState(() => _searchQuery = value);
-                     _fetchInvoices(refresh: true);
-                  },
+                  child: TextField(
+                    controller: _searchController,
+                    textAlignVertical: TextAlignVertical.center,
+                    decoration: InputDecoration(
+                      filled: false, 
+                      fillColor: Colors.transparent,
+                      hintText: l10n.searchPlaceholder,
+                      hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
+                      prefixIcon: const Icon(Icons.search, size: 20, color: Colors.grey),
+                      border: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      errorBorder: InputBorder.none,
+                      disabledBorder: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14), // Let TextAlignVertical handle vertical centering
+                    ),
+                    onChanged: (value) {
+                       if (_debounce?.isActive ?? false) _debounce!.cancel();
+                       _debounce = Timer(const Duration(milliseconds: 500), () {
+                          setState(() => _searchQuery = value);
+                          _fetchInvoices(refresh: true);
+                       });
+                    },
+                    onSubmitted: (value) {
+                       if (_debounce?.isActive ?? false) _debounce!.cancel();
+                       setState(() => _searchQuery = value);
+                       _fetchInvoices(refresh: true);
+                    },
+                  ),
                 ),
-              ),
-           ),
-           Expanded(child: _buildGroupedList(l10n)),
-        ],
+             ),
+             Expanded(child: _buildGroupedList(l10n)),
+          ],
+        ),
       ),
     );
   }

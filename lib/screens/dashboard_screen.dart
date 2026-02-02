@@ -489,6 +489,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           style: OutlinedButton.styleFrom(
                             foregroundColor: theme.colorScheme.error,
                             side: BorderSide(color: theme.colorScheme.error),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
                           ),
                         ),
                       ),
@@ -501,6 +502,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           },
                           icon: const Icon(Icons.edit_outlined, size: 20),
                           label: Text(l10n.edit),
+                          style: FilledButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
                         ),
                       ),
                     ],
@@ -531,17 +535,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildDetailRow(ThemeData theme, String label, String value, {bool isBold = false}) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 12),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
-          Text(
-            value, 
-            style: theme.textTheme.bodyMedium?.copyWith(
-              fontWeight: isBold ? FontWeight.bold : FontWeight.w500,
-              color: isBold ? theme.colorScheme.primary : theme.colorScheme.onSurface
-            )
+          SizedBox(
+            width: 100,
+            child: Text(
+              label, 
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w500,
+              )
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              value, 
+              textAlign: TextAlign.end,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
+                color: isBold ? theme.colorScheme.primary : theme.colorScheme.onSurface,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         ],
       ),
@@ -563,7 +582,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         
         return AlertDialog(
           title: Text(l10n.deleteInvoice),
-          content: Container(
+          content: SizedBox(
             width: isTablet ? width * 0.7 : null,
             child: Text(l10n.deleteConfirmation(invoice.invoiceNumber)),
           ),

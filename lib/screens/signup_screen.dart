@@ -6,6 +6,7 @@ import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../services/supabase_service.dart';
 import '../widgets/responsive_layout.dart';
+import '../widgets/app_logo.dart';
 import 'profile_screen.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -101,38 +102,14 @@ class _SignupScreenState extends State<SignupScreen> {
     final l10n = AppLocalizations.of(context)!;
     return Form(
       key: _formKey,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
+      autovalidateMode: AutovalidateMode.disabled,
       child: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-          Center(
-            child: Image.asset(
-              'assets/logo_with_name.png',
-              height: 60,
-              width: 200,
-              errorBuilder: (context, error, stackTrace) => Container(
-                height: 64,
-                width: 64,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: const Icon(Icons.person_add_outlined, color: Colors.white, size: 32),
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            l10n.createAccount,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-          ),
+          const AppLogo(size: 80, fontSize: 28),
           const SizedBox(height: 32),
 
           CustomTextField(
@@ -256,36 +233,38 @@ class _SignupScreenState extends State<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ResponsiveLayout(
-        mobile: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 400),
-              child: _buildSignupForm(),
+      body: SafeArea(
+        child: ResponsiveLayout(
+          mobile: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 400),
+                child: _buildSignupForm(),
+              ),
             ),
           ),
-        ),
-        tablet: Row(
-          children: [
-            Expanded(
-              child: Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(32),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 450),
-                    child: _buildSignupForm(),
+          tablet: Row(
+            children: [
+              Expanded(
+                child: Center(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(32),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 450),
+                      child: _buildSignupForm(),
+                    ),
                   ),
                 ),
               ),
-            ),
-            Expanded(
-              child: Container(
-                color: Theme.of(context).colorScheme.surfaceContainerLow,
-                child: _buildIllustration(),
+              Expanded(
+                child: Container(
+                  color: Theme.of(context).colorScheme.surfaceContainerLow,
+                  child: _buildIllustration(),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

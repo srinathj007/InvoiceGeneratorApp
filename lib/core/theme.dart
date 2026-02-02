@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // Using a professional Blue-Grey base for a modern enterprise look
-  static const Color seedColor = Color(0xFF2563EB); 
+  static const Color seedColor = Color(0xFF0D9488); // Teal color matching the new logo
 
   static ThemeData getTheme(Color seedColor) {
     final colorScheme = ColorScheme.fromSeed(

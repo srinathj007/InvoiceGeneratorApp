@@ -198,7 +198,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     // Remove Card, use direct Column on Surface
     return Form(
       key: _formKey,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
+      autovalidateMode: AutovalidateMode.disabled,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -404,21 +404,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           centerTitle: false,
         ),
-        body: ResponsiveLayout(
-          mobile: _isLoading 
-            ? const Center(child: CircularProgressIndicator())
-            : Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 500),
-                    child: _buildProfileForm(),
+        body: SafeArea(
+          child: ResponsiveLayout(
+            mobile: _isLoading 
+              ? const Center(child: CircularProgressIndicator())
+              : Center(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 500),
+                      child: _buildProfileForm(),
+                    ),
                   ),
                 ),
-              ),
-          // Assuming desktop and tablet layouts might be added here,
-          // or the ResponsiveLayout is used for a single child.
-          // The original snippet had extra closing brackets, which are removed.
+          ),
         ),
       ),
     );
