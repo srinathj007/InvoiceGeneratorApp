@@ -121,7 +121,7 @@
   "unexpectedError": "An unexpected error occurred",
   "resetPassword": "Reset Password",
   "recoveryInstructions": "Enter your email to receive recovery instructions",
-  "sendResetLink": "Send Reset Link",
+  "sendResetLink": "Send OTP",
   "rememberPassword": "Remember your password? ",
   "accountRecovery": "Account Recovery",
   "recoveryMessage": "Don't worry! It happens to the best of us. We'll help you get back to your dashboard in no time.",

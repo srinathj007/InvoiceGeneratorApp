@@ -384,7 +384,7 @@ class AppLocalizationsTe extends AppLocalizations {
       'రికవరీ సూచనలను స్వీకరించడానికి మీ ఇమెయిల్‌ను నమోదు చేయండి';
 
   @override
-  String get sendResetLink => 'రీసెట్ లింక్ పంపండి';
+  String get sendResetLink => 'OTP పంపండి';
 
   @override
   String get rememberPassword => 'మీ పాస్‌వర్డ్ గుర్తుందా? ';

@@ -7,6 +7,7 @@ import '../widgets/custom_text_field.dart';
 import '../services/supabase_service.dart';
 import '../widgets/responsive_layout.dart';
 import '../widgets/app_logo.dart';
+import 'otp_verification_screen.dart';
 import 'profile_screen.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -52,9 +53,16 @@ class _SignupScreenState extends State<SignupScreen> {
             (route) => false,
           );
         } else {
-          // Verification required?
-          AppTheme.showToast(context, l10n.registrationSuccess);
-          Navigator.pop(context);
+          // Verification required
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => OTPVerificationScreen(
+                email: email,
+                type: OTPVerifyType.signup,
+              ),
+            ),
+          );
         }
       }
     } on AuthException catch (e) {
@@ -63,7 +71,7 @@ class _SignupScreenState extends State<SignupScreen> {
       }
     } catch (e) {
       if (mounted) {
-        _showError(l10n.unexpectedError);
+        _showError(e.toString());
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);

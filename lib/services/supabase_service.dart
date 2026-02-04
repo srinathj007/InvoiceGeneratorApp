@@ -47,8 +47,28 @@ class AuthService {
   // Listen to auth state changes
   Stream<AuthState> get authStateChanges => _supabase.auth.onAuthStateChange;
 
-  // Reset password
+  // Reset password (sends OTP/Link)
   Future<void> resetPassword(String email) async {
     await _supabase.auth.resetPasswordForEmail(email);
+  }
+
+  // Verify OTP
+  Future<AuthResponse> verifyOTP({
+    required String email,
+    required String token,
+    required OtpType type,
+  }) async {
+    return await _supabase.auth.verifyOTP(
+      email: email,
+      token: token,
+      type: type,
+    );
+  }
+
+  // Update password (after recovery)
+  Future<void> updatePassword(String newPassword) async {
+    await _supabase.auth.updateUser(
+      UserAttributes(password: newPassword),
+    );
   }
 }

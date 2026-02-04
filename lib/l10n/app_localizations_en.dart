@@ -381,7 +381,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Enter your email to receive recovery instructions';
 
   @override
-  String get sendResetLink => 'Send Reset Link';
+  String get sendResetLink => 'Send OTP';
 
   @override
   String get rememberPassword => 'Remember your password? ';

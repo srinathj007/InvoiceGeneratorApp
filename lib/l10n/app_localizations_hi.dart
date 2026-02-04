@@ -382,7 +382,7 @@ class AppLocalizationsHi extends AppLocalizations {
       'पुनर्प्राप्ति निर्देश प्राप्त करने के लिए अपना ईमेल दर्ज करें';
 
   @override
-  String get sendResetLink => 'रीसेट लिंक भेजें';
+  String get sendResetLink => 'OTP भेजें';
 
   @override
   String get rememberPassword => 'अपना पासवर्ड याद है? ';

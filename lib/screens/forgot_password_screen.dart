@@ -7,6 +7,7 @@ import '../services/supabase_service.dart';
 import '../widgets/responsive_layout.dart';
 import 'package:invoice_gen_app/l10n/app_localizations.dart';
 import '../widgets/app_logo.dart';
+import 'otp_verification_screen.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -17,6 +18,7 @@ class ForgotPasswordScreen extends StatefulWidget {
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final _authService = AuthService();
   bool _isLoading = false;
@@ -27,6 +29,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     }
 
     final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
     final l10n = AppLocalizations.of(context)!;
 
     setState(() => _isLoading = true);
@@ -34,8 +37,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     try {
       await _authService.resetPassword(email);
       if (mounted) {
-        _showToast(l10n.passwordResetSent);
-        Navigator.pop(context);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => OTPVerificationScreen(
+              email: email,
+              type: OTPVerifyType.recovery,
+              newPassword: password,
+            ),
+          ),
+        );
       }
     } on AuthException catch (e) {
       if (mounted) {
@@ -43,7 +54,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       }
     } catch (e) {
       if (mounted) {
-        _showToast(l10n.unexpectedError, isError: true);
+        _showToast(e.toString(), isError: true);
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -96,6 +107,23 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
               if (!emailRegex.hasMatch(value)) {
                 return 'Please enter a valid email address';
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 16),
+          CustomTextField(
+            controller: _passwordController,
+            label: 'New Password',
+            hint: 'Enter your new password',
+            prefixIcon: Icons.lock_outline,
+            isPassword: true,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter a new password';
+              }
+              if (value.length < 6) {
+                return 'Password must be at least 6 characters';
               }
               return null;
             },

@@ -835,7 +835,7 @@ abstract class AppLocalizations {
   /// No description provided for @sendResetLink.
   ///
   /// In en, this message translates to:
-  /// **'Send Reset Link'**
+  /// **'Send OTP'**
   String get sendResetLink;
 
   /// No description provided for @rememberPassword.
