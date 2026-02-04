@@ -2,7 +2,7 @@
     <!-- ADD THIS LINE -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:label="ManaVyapar"
+        android:label="ManaBill"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

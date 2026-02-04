@@ -103,7 +103,7 @@ abstract class AppLocalizations {
   /// No description provided for @appTitle.
   ///
   /// In en, this message translates to:
-  /// **'Invoice Generator'**
+  /// **'ManaBill'**
   String get appTitle;
 
   /// No description provided for @welcomeBack.

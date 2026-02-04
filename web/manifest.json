@@ -1,11 +1,11 @@
 {
-    "name": "Invoice_gen_app",
-    "short_name": "Invoice_gen_app",
+    "name": "ManaBill",
+    "short_name": "ManaBill",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Simple • Free • Secure Invoice Management",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

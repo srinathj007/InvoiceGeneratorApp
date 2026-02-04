@@ -10,7 +10,7 @@ class AboutScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('About ManaVyapar'),
+        title: const Text('About ManaBill'),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),

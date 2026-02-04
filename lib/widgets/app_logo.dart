@@ -18,21 +18,26 @@ class AppLogo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (showName) {
-      return Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildIcon(),
-          const SizedBox(height: 12),
-          Text(
-            'ManaVyapar',
-            style: GoogleFonts.outfit(
-              fontSize: fontSize,
-              fontWeight: FontWeight.bold,
-              color: color ?? Theme.of(context).colorScheme.onSurface,
-              letterSpacing: 0.5,
+      return Image.asset(
+        'assets/logo_with_name.png',
+        height: size + (fontSize * 1.5),
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) => Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildIcon(),
+            const SizedBox(height: 12),
+            Text(
+              'ManaBill',
+              style: GoogleFonts.outfit(
+                fontSize: fontSize,
+                fontWeight: FontWeight.bold,
+                color: color ?? Theme.of(context).colorScheme.onSurface,
+                letterSpacing: 0.5,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       );
     }
     return _buildIcon();
@@ -54,7 +59,7 @@ class AppLogo extends StatelessWidget {
         ],
       ),
       child: Image.asset(
-        'assets/newlogo.png',
+        'assets/logo.png',
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) => Container(
           color: const Color(0xFF1E293B),
