@@ -3,13 +3,16 @@ import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // Using a professional Blue-Grey base for a modern enterprise look
-  static const Color seedColor = Color(0xFF0D9488); // Teal color matching the new logo
+  static const Color seedColor = Color(0xFF1B93C4); // Vibrant blue from logo
 
-  static ThemeData getTheme(Color seedColor) {
+  static ThemeData getTheme(Color themeSeedColor) {
     final colorScheme = ColorScheme.fromSeed(
-      seedColor: seedColor,
+      seedColor: themeSeedColor,
       brightness: Brightness.light,
-      surface: const Color(0xFFF3F4F6), // Cool gray surface
+      surface: const Color(0xFFF3F4F6),
+    ).copyWith(
+      primary: themeSeedColor,
+      onPrimary: Colors.white,
     );
 
     return ThemeData(

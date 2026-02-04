@@ -7,6 +7,7 @@ import '../widgets/custom_text_field.dart';
 import '../services/supabase_service.dart';
 import '../widgets/responsive_layout.dart';
 import '../widgets/app_logo.dart';
+import '../widgets/language_selector.dart';
 import 'otp_verification_screen.dart';
 import 'profile_screen.dart';
 
@@ -242,37 +243,46 @@ class _SignupScreenState extends State<SignupScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: ResponsiveLayout(
-          mobile: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 400),
-                child: _buildSignupForm(),
-              ),
-            ),
-          ),
-          tablet: Row(
-            children: [
-              Expanded(
-                child: Center(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(32),
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 450),
-                      child: _buildSignupForm(),
-                    ),
+        child: Stack(
+          children: [
+            ResponsiveLayout(
+              mobile: Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 400),
+                    child: _buildSignupForm(),
                   ),
                 ),
               ),
-              Expanded(
-                child: Container(
-                  color: Theme.of(context).colorScheme.surfaceContainerLow,
-                  child: _buildIllustration(),
-                ),
+              tablet: Row(
+                children: [
+                  Expanded(
+                    child: Center(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(32),
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 450),
+                          child: _buildSignupForm(),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Container(
+                      color: Theme.of(context).colorScheme.surfaceContainerLow,
+                      child: _buildIllustration(),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+            const Positioned(
+              top: 10,
+              right: 10,
+              child: LanguageSelector(),
+            ),
+          ],
         ),
       ),
     );

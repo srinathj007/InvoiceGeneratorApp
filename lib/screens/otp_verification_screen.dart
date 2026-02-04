@@ -5,6 +5,7 @@ import '../services/supabase_service.dart';
 import '../core/theme.dart';
 import '../widgets/custom_button.dart';
 import 'profile_screen.dart';
+import '../widgets/language_selector.dart';
 
 enum OTPVerifyType { signup, recovery }
 
@@ -128,7 +129,12 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Verify Email')),
+      appBar: AppBar(
+        title: const Text('Verify Email'),
+        actions: const [
+          LanguageSelector(),
+        ],
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),

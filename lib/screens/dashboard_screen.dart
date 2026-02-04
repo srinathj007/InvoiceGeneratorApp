@@ -379,6 +379,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
   
   Widget _buildRevenueToggle(String label, bool isSelected) {
+    final theme = Theme.of(context);
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -395,7 +396,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? const Color(0xFF2563EB) : Colors.white70,
+            color: isSelected ? theme.colorScheme.primary : Colors.white70,
             fontWeight: FontWeight.bold,
             fontSize: 12,
           ),

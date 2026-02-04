@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
 class ThemeProvider extends ChangeNotifier {
-  Color _selectedColor = const Color(0xFF2563EB); // Default Blue
+  Color _selectedColor = const Color(0xFF1B93C4); // Vibrant Logo Blue
 
   Color get selectedColor => _selectedColor;
 
   static const List<Color> availableColors = [
     Color(0xFFFFAB40), // Orange (Default)
-    Color(0xFF2563EB), // Blue
+    Color(0xFF1B93C4), // Logo Blue
     Color(0xFF4CAF50), // Green
     Color(0xFF9C27B0), // Purple
     Color(0xFFE91E63), // Pink

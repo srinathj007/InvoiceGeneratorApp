@@ -9,6 +9,7 @@ import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/responsive_layout.dart';
 import 'package:invoice_gen_app/l10n/app_localizations.dart';
+import '../widgets/language_selector.dart';
 
 class ProfileScreen extends StatefulWidget {
   final bool isNewBusiness;
@@ -403,6 +404,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             color: Theme.of(context).colorScheme.onSurface,
           ),
           centerTitle: false,
+          actions: const [
+            LanguageSelector(),
+          ],
         ),
         body: SafeArea(
           child: ResponsiveLayout(
