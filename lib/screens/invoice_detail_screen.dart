@@ -358,8 +358,8 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> with SingleTi
                               [
                                 'Name: ${_invoice.customerName}',
                                 if (_invoice.customerPhone?.isNotEmpty == true) 'Ph: ${_invoice.customerPhone}',
-                                if (_invoice.vehicleNumber?.isNotEmpty == true) 
-                                  '$customLabel: ${_invoice.vehicleNumber}',
+                                if (profile?.isCustomFieldEnabled == true && _invoice.customField?.isNotEmpty == true) 
+                                  '$customLabel: ${_invoice.customField}',
                               ],
                             ),
                             const SizedBox(height: 24),
@@ -384,8 +384,8 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> with SingleTi
                                 [
                                   'Name: ${_invoice.customerName}',
                                   if (_invoice.customerPhone?.isNotEmpty == true) 'Ph: ${_invoice.customerPhone}',
-                                  if (_invoice.vehicleNumber?.isNotEmpty == true) 
-                                    '$customLabel: ${_invoice.vehicleNumber}',
+                                  if (profile?.isCustomFieldEnabled == true && _invoice.customField?.isNotEmpty == true) 
+                                    '$customLabel: ${_invoice.customField}',
                                 ],
                               ),
                             ),

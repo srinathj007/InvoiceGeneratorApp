@@ -13,6 +13,7 @@ class BusinessProfile {
   final String? customLogo4Url;
   final String? customFieldLabel;      // Generic label for an extra field
   final String? customFieldPlaceholder; // Generic placeholder for an extra field
+  final bool isCustomFieldEnabled; // Toggle for the custom field
   final String? gstin;
 
   BusinessProfile({
@@ -30,6 +31,7 @@ class BusinessProfile {
     this.customLogo4Url,
     this.customFieldLabel,
     this.customFieldPlaceholder,
+    this.isCustomFieldEnabled = false,
     this.gstin,
   });
 
@@ -49,6 +51,7 @@ class BusinessProfile {
       customLogo4Url: json['custom_logo_4_url'],
       customFieldLabel: json['custom_field_label'],
       customFieldPlaceholder: json['custom_field_placeholder'],
+      isCustomFieldEnabled: json['is_custom_field_enabled'] ?? false,
       gstin: json['gstin'],
     );
   }
@@ -69,6 +72,7 @@ class BusinessProfile {
       'custom_logo_4_url': customLogo4Url,
       'custom_field_label': customFieldLabel,
       'custom_field_placeholder': customFieldPlaceholder,
+      'is_custom_field_enabled': isCustomFieldEnabled,
       'gstin': gstin,
     };
   }
@@ -88,6 +92,7 @@ class BusinessProfile {
     String? customLogo4Url,
     String? customFieldLabel,
     String? customFieldPlaceholder,
+    bool? isCustomFieldEnabled,
     String? gstin,
   }) {
     return BusinessProfile(
@@ -105,6 +110,7 @@ class BusinessProfile {
       customLogo4Url: customLogo4Url ?? this.customLogo4Url,
       customFieldLabel: customFieldLabel ?? this.customFieldLabel,
       customFieldPlaceholder: customFieldPlaceholder ?? this.customFieldPlaceholder,
+      isCustomFieldEnabled: isCustomFieldEnabled ?? this.isCustomFieldEnabled,
       gstin: gstin ?? this.gstin,
     );
   }

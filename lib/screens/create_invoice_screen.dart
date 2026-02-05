@@ -30,7 +30,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
   // Customer & Bill Details
   final _customerNameController = TextEditingController();
   final _customerPhoneController = TextEditingController();
-  final _vehicleNumberController = TextEditingController();
+  final _customFieldController = TextEditingController();
   late TextEditingController _invoiceNumberController;
   DateTime _selectedDate = DateTime.now();
   
@@ -94,7 +94,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
   void _loadInvoiceData(Invoice invoice) {
     _customerNameController.text = invoice.customerName;
     _customerPhoneController.text = invoice.customerPhone ?? '';
-    _vehicleNumberController.text = invoice.vehicleNumber ?? '';
+    _customFieldController.text = invoice.customField ?? '';
     _invoiceNumberController.text = invoice.invoiceNumber;
     _selectedDate = invoice.date;
     
@@ -112,7 +112,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
   void dispose() {
     _customerNameController.dispose();
     _customerPhoneController.dispose();
-    _vehicleNumberController.dispose();
+    _customFieldController.dispose();
     _invoiceNumberController.dispose();
     _itemNameController.dispose();
     _itemQuantityController.dispose();
@@ -173,7 +173,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
         profileId: _profile!.id!, // Link to active business profile
         customerName: _customerNameController.text.trim(),
         customerPhone: _customerPhoneController.text.trim(),
-        vehicleNumber: _vehicleNumberController.text.trim(),
+        customField: _customFieldController.text.trim(),
         date: _selectedDate,
         invoiceNumber: _invoiceNumberController.text.trim(),
         subtotal: _subtotal,
@@ -286,7 +286,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
               setState(() {
                 _customerNameController.clear();
                 _customerPhoneController.clear();
-                _vehicleNumberController.clear();
+                _customFieldController.clear();
                 _items.clear();
               });
             },
@@ -414,13 +414,15 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                 prefixIcon: Icons.phone_outlined,
                 keyboardType: TextInputType.phone,
               ),
-              const SizedBox(height: 12),
-              CustomTextField(
-                controller: _vehicleNumberController,
-                label: customLabel,
-                hint: customHint,
-                prefixIcon: Icons.label_outline,
-              ),
+              if (_profile?.isCustomFieldEnabled == true) ...[
+                const SizedBox(height: 12),
+                CustomTextField(
+                  controller: _customFieldController,
+                  label: customLabel,
+                  hint: customHint,
+                  prefixIcon: Icons.label_outline,
+                ),
+              ],
               const SizedBox(height: 16),
               InkWell(
                 onTap: () async {

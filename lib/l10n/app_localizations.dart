@@ -963,6 +963,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Error switching business'**
   String get errorSwitchingBusiness;
+
+  /// No description provided for @enableCustomField.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable Custom Field'**
+  String get enableCustomField;
 }
 
 class _AppLocalizationsDelegate

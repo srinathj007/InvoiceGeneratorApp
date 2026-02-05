@@ -447,4 +447,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorSwitchingBusiness => 'Error switching business';
+
+  @override
+  String get enableCustomField => 'Enable Custom Field';
 }

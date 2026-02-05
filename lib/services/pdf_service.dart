@@ -93,7 +93,7 @@ class PdfService {
           final bold = pw.Font.timesBold();
 
           return [
-            _buildInfo(invoice, regular, bold),
+            _buildInfo(invoice, profile, regular, bold),
             pw.SizedBox(height: 12),
             _buildTable(invoice, regular, bold),
             pw.SizedBox(height: 35),
@@ -179,7 +179,7 @@ class PdfService {
 
   // ---------------- INFO ----------------
 
-  pw.Widget _buildInfo(Invoice i, pw.Font r, pw.Font b) {
+  pw.Widget _buildInfo(Invoice i, BusinessProfile profile, pw.Font r, pw.Font b) {
     return pw.Row(
       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
       children: [
@@ -188,7 +188,8 @@ class PdfService {
           children: [
             _info("Customer Name:", i.customerName, r, b),
             _info("Phone:", i.customerPhone ?? "", r, b),
-            _info("Vehicle:", i.vehicleNumber ?? "", r, b),
+            if (profile.isCustomFieldEnabled && i.customField != null && i.customField!.isNotEmpty)
+              _info("${profile.customFieldLabel ?? 'Reference'}:", i.customField!, r, b),
           ],
         ),
         pw.Column(

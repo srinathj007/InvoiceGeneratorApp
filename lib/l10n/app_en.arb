@@ -142,5 +142,6 @@
   "addNewBusiness": "Add new business",
   "errorLoadingBusinesses": "Error loading businesses",
   "switchedSuccessfully": "Switched business successfully",
-  "errorSwitchingBusiness": "Error switching business"
+  "errorSwitchingBusiness": "Error switching business",
+  "enableCustomField": "Enable Custom Field"
 }

@@ -451,4 +451,7 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get errorSwitchingBusiness => 'వ్యాపారాన్ని మార్చడంలో లోపం';
+
+  @override
+  String get enableCustomField => 'Enable Custom Field';
 }

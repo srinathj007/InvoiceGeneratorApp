@@ -103,114 +103,151 @@ class _MainNavigationState extends State<MainNavigation> {
     final l10n = AppLocalizations.of(context)!;
     
     // Custom Cyan/Blue color for the button gradient to match reference
-    // UPDATED: Now using dynamic theme colors
     final gradientColors = [
       colorScheme.primary, 
       colorScheme.secondary, 
     ];
 
     return Scaffold(
+      extendBody: true, // Allows the FAB to float nicel relative to the notch
       body: _screens[_selectedIndex],
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: _onItemTapped,
-        backgroundColor: colorScheme.surface,
-        indicatorColor: Colors.transparent, 
-        destinations: [
-          NavigationDestination(
-            icon: const Icon(Icons.grid_view_outlined, color: Colors.grey),
-            selectedIcon: Icon(Icons.grid_view_rounded, color: colorScheme.primary),
-            label: l10n.dashboard,
+      floatingActionButton: Transform.translate(
+        offset: const Offset(0, 18), // Moved down further
+        child: Container(
+          height: 64,
+          width: 64,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: LinearGradient(
+              colors: gradientColors,
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: gradientColors[0].withOpacity(0.4),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-          NavigationDestination(
-            icon: const Icon(Icons.description_outlined, color: Colors.grey),
-            selectedIcon: Icon(Icons.description_rounded, color: colorScheme.primary),
-            label: l10n.invoices,
+          child: FloatingActionButton(
+            onPressed: () => _onItemTapped(2), // Index 2 is Add/Create
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            shape: const CircleBorder(),
+            child: const Icon(Icons.add, color: Colors.white, size: 32),
           ),
-          // Central Hexagon (+) Button
-          NavigationDestination(
-             icon: Transform.translate(
-               offset: const Offset(0, -10), // Slight lift
-               child: Container(
-                 width: 58,
-                 height: 58,
-                 decoration: BoxDecoration(
-                   boxShadow: [
-                     BoxShadow(
-                       color: gradientColors[0].withOpacity(0.4),
-                       blurRadius: 10,
-                       offset: const Offset(0, 4),
-                     ),
-                   ],
-                 ),
-                 child: ClipPath(
-                   clipper: HexagonClipper(),
-                   child: Container(
-                     decoration: BoxDecoration(
-                       gradient: LinearGradient(
-                         colors: gradientColors,
-                         begin: Alignment.topLeft,
-                         end: Alignment.bottomRight,
-                       ),
-                     ),
-                     child: const Icon(Icons.add, color: Colors.white, size: 32),
-                   ),
-                 ),
-               ),
-             ),
-             label: '', 
-             tooltip: l10n.newInvoice,
-             enabled: true, 
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.store_outlined, color: Colors.grey), // Icon for Switch Business
-            selectedIcon: Icon(Icons.store_rounded, color: colorScheme.primary),
-            label: l10n.switchLabel, 
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.settings_outlined, color: Colors.grey),
-            selectedIcon: Icon(Icons.settings_rounded, color: colorScheme.primary),
-            label: l10n.settings,
-          ),
-        ],
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: BottomAppBar(
+        shape: const CircularNotchedRectangle(),
+        notchMargin: 8.0,
+        color: colorScheme.surface,
+        elevation: 10,
+        padding: EdgeInsets.zero,
+        height: 72, // Slightly taller to accommodate labels
+        child: Row(
+          children: [
+            // Left Side Group - Centered
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildNavItem(
+                    context,
+                    index: 0,
+                    icon: Icons.grid_view_outlined,
+                    activeIcon: Icons.grid_view_rounded,
+                    label: l10n.dashboard,
+                  ),
+                  _buildNavItem(
+                    context,
+                    index: 1,
+                    icon: Icons.description_outlined, 
+                    activeIcon: Icons.description_rounded,
+                    label: l10n.invoices, // Mapped to "Bills" concept
+                  ),
+                ],
+              ),
+            ),
+            
+            // Spacer for FAB - Wider to ensure no overlap and perfect centering
+            const SizedBox(width: 80),
+            
+            // Right Side Group - Centered
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildNavItem(
+                    context,
+                    index: 3, // Switch Profile
+                    icon: Icons.store_outlined,
+                    activeIcon: Icons.store_rounded,
+                    label: l10n.switchLabel,
+                  ),
+                  _buildNavItem(
+                    context,
+                    index: 4, // Settings
+                    icon: Icons.settings_outlined,
+                    activeIcon: Icons.settings_rounded,
+                    label: l10n.settings,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
-}
 
-class HexagonClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    final path = Path();
-    final w = size.width;
-    final h = size.height;
+  Widget _buildNavItem(
+    BuildContext context, {
+    required int index,
+    required IconData icon,
+    required IconData activeIcon,
+    required String label,
+  }) {
+    final isSelected = _selectedIndex == index;
+    final theme = Theme.of(context);
+    final color = isSelected ? theme.colorScheme.primary : Colors.grey;
     
-    // Create a hexagon with slightly rounded corners if possible, but standard is fine for clipper
-    // Pointy top/bottom or flat top/bottom? Reference image has flat side up? 
-    // Wait, ref image has POINTY top/bottom (Vertical Hexagon). 
-    // Let's do Pointy Top/Bottom.
+    // For actions like Switch Profile (idx 3), we might not want to show "selected" state 
+    // if it's a modal action that doesn't switch the screen persistently?
+    // Current logic in _onItemTapped:
+    // Index 3 (Switch) -> showBottomSheet. It DOES NOT update _selectedIndex.
+    // So isSelected will likely be false for index 3 always. That's fine.
     
-    // Vertices for Pointy Top Hexagon:
-    // (w/2, 0) Top
-    // (w, h*0.25) Top Right
-    // (w, h*0.75) Bottom Right
-    // (w/2, h) Bottom
-    // (0, h*0.75) Bottom Left
-    // (0, h*0.25) Top Left
-    
-    path.moveTo(w / 2, 0);
-    path.lineTo(w, h * 0.25);
-    path.lineTo(w, h * 0.75);
-    path.lineTo(w / 2, h);
-    path.lineTo(0, h * 0.75);
-    path.lineTo(0, h * 0.25);
-    path.close();
-    
-    return path;
+    return InkWell(
+      onTap: () => _onItemTapped(index),
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              isSelected ? activeIcon : icon,
+              color: color,
+              size: 26,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: color,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
-
-  @override
-  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }
 
 // Removed _NavIcon class as it's no longer used

@@ -28,6 +28,7 @@ create table if not exists public.profiles (
 
   custom_field_label text,
   custom_field_placeholder text,
+  is_custom_field_enabled boolean default false,
 
   gstin text,
 
@@ -63,7 +64,7 @@ create table if not exists public.invoices (
 
   customer_name text not null,
   customer_phone text,
-  vehicle_number text,
+  custom_field text,
 
   invoice_date date not null default current_date,
   invoice_number text not null,

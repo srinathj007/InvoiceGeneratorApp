@@ -4,7 +4,7 @@ class Invoice {
   final String profileId; // Link to specific business profile
   final String customerName;
   final String? customerPhone;
-  final String? vehicleNumber;
+  final String? customField; // Was vehicleNumber
   final DateTime date;
   final String invoiceNumber;
   final double subtotal;
@@ -20,7 +20,7 @@ class Invoice {
     required this.profileId,
     required this.customerName,
     this.customerPhone,
-    this.vehicleNumber,
+    this.customField,
     required this.date,
     required this.invoiceNumber,
     required this.subtotal,
@@ -38,7 +38,7 @@ class Invoice {
       profileId: json['profile_id'],
       customerName: json['customer_name'],
       customerPhone: json['customer_phone'],
-      vehicleNumber: json['vehicle_number'],
+      customField: json['custom_field'], // Was vehicle_number
       date: DateTime.parse(json['invoice_date']),
       invoiceNumber: json['invoice_number'],
       subtotal: (json['subtotal'] as num).toDouble(),
@@ -57,7 +57,7 @@ class Invoice {
       'profile_id': profileId,
       'customer_name': customerName,
       'customer_phone': customerPhone,
-      'vehicle_number': vehicleNumber,
+      'custom_field': customField, // Was vehicle_number
       'invoice_date': date.toIso8601String().split('T')[0],
       'invoice_number': invoiceNumber,
       'subtotal': subtotal,

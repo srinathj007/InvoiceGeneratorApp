@@ -449,4 +449,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get errorSwitchingBusiness => 'व्यापार बदलने में त्रुटि';
+
+  @override
+  String get enableCustomField => 'Enable Custom Field';
 }

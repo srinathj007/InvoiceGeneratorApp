@@ -127,13 +127,13 @@ class InvoiceCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 24),
                         Text(
-                          invoice.vehicleNumber?.isNotEmpty == true ? invoice.vehicleNumber! : 'N/A', 
+                          invoice.customField?.isNotEmpty == true ? invoice.customField! : 'N/A', 
                           style: theme.textTheme.titleMedium?.copyWith(
                              fontWeight: FontWeight.bold,
                           ),
                         ),
                         Text(
-                         'Vehicle No',
+                         'Reference',
                           style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
                         ),
                       ],

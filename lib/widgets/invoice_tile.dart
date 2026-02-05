@@ -65,11 +65,11 @@ class InvoiceTile extends StatelessWidget {
                       ),
                     ],
                   ),
-                  // Custom Field (Vehicle Number)
-                  if (invoice.vehicleNumber?.isNotEmpty == true) ...[
+                  // Custom Field (Custom Field)
+                  if (invoice.customField?.isNotEmpty == true) ...[
                      const SizedBox(height: 2),
                      Text(
-                        invoice.vehicleNumber!,
+                        invoice.customField!,
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                           fontWeight: FontWeight.w500,

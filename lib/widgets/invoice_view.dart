@@ -90,7 +90,8 @@ class InvoiceView extends StatelessWidget {
           children: [
             _info("Customer Name:", invoice.customerName),
             _info("Phone:", invoice.customerPhone ?? ""),
-            _info("Vehicle:", invoice.vehicleNumber ?? ""),
+            if (profile.isCustomFieldEnabled && invoice.customField?.isNotEmpty == true)
+              _info("${profile.customFieldLabel ?? 'Reference'}:", invoice.customField!),
           ],
         ),
         Column(

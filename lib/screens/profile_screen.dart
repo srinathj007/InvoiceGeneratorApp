@@ -48,6 +48,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String? _customLogo2Url;
   String? _customLogo3Url;
   String? _customLogo4Url;
+  bool _isCustomFieldEnabled = false;
 
   final _picker = ImagePicker();
 
@@ -79,6 +80,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _customLogo2Url = profile.customLogo2Url;
           _customLogo3Url = profile.customLogo3Url;
           _customLogo4Url = profile.customLogo4Url;
+          _isCustomFieldEnabled = profile.isCustomFieldEnabled;
           _customFieldLabelController.text = profile.customFieldLabel ?? '';
           _customFieldPlaceholderController.text = profile.customFieldPlaceholder ?? '';
           _gstinController.text = profile.gstin ?? '';
@@ -127,6 +129,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         customLogo2Url: _customLogo2Url,
         customLogo3Url: _customLogo3Url,
         customLogo4Url: _customLogo4Url,
+        isCustomFieldEnabled: _isCustomFieldEnabled,
         customFieldLabel: _customFieldLabelController.text.trim(),
         customFieldPlaceholder: _customFieldPlaceholderController.text.trim(),
         gstin: _gstinController.text.trim(),
@@ -232,19 +235,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
         const SizedBox(height: 32),
         _buildSectionHeader(l10n.customFields),
         const SizedBox(height: 16),
-        CustomTextField(
-          controller: _customFieldLabelController,
-          label: l10n.customFieldLabel,
-          hint: l10n.enterCustomFieldLabel,
-          prefixIcon: Icons.label_outline,
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(l10n.enableCustomField ?? 'Enable Custom Field'), // Fallback if l10n missing
+          subtitle: Text('Add a custom field like Vehicle No, PO No, etc.'),
+          value: _isCustomFieldEnabled, 
+          onChanged: (val) => setState(() => _isCustomFieldEnabled = val),
         ),
-        const SizedBox(height: 20),
-        CustomTextField(
-          controller: _customFieldPlaceholderController,
-          label: l10n.customFieldPlaceholder,
-          hint: l10n.enterCustomFieldPlaceholder,
-          prefixIcon: Icons.short_text,
-        ),
+        if (_isCustomFieldEnabled) ...[
+          const SizedBox(height: 16),
+          CustomTextField(
+            controller: _customFieldLabelController,
+            label: l10n.customFieldLabel,
+            hint: l10n.enterCustomFieldLabel,
+            prefixIcon: Icons.label_outline,
+          ),
+          const SizedBox(height: 20),
+          CustomTextField(
+            controller: _customFieldPlaceholderController,
+            label: l10n.customFieldPlaceholder,
+            hint: l10n.enterCustomFieldPlaceholder,
+            prefixIcon: Icons.short_text,
+          ),
+        ],
         
         const SizedBox(height: 32),
         _buildSectionHeader(l10n.businessAssets),

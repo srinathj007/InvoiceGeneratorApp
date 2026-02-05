@@ -152,7 +152,7 @@ class InvoiceService {
   Future<List<Invoice>> getInvoices({
     String? customerName,
     String? phoneNumber,
-    String? vehicleNumber,
+    String? customField, // Was vehicleNumber
     String? invoiceNumber,
     String? searchQuery,
     DateTime? startDate,
@@ -173,7 +173,7 @@ class InvoiceService {
     // Global Search (Mobile)
     if (searchQuery != null && searchQuery.isNotEmpty) {
       final s = '%$searchQuery%';
-      query = query.or('customer_name.ilike.$s,customer_phone.ilike.$s,vehicle_number.ilike.$s,invoice_number.ilike.$s');
+      query = query.or('customer_name.ilike.$s,customer_phone.ilike.$s,custom_field.ilike.$s,invoice_number.ilike.$s');
     }
 
     // Apply Specific Filters (Tablet/Sidebar)
@@ -183,8 +183,8 @@ class InvoiceService {
     if (phoneNumber != null && phoneNumber.isNotEmpty) {
       query = query.ilike('customer_phone', '%$phoneNumber%');
     }
-    if (vehicleNumber != null && vehicleNumber.isNotEmpty) {
-      query = query.ilike('vehicle_number', '%$vehicleNumber%');
+    if (customField != null && customField.isNotEmpty) {
+      query = query.ilike('custom_field', '%$customField%');
     }
     if (invoiceNumber != null && invoiceNumber.isNotEmpty) {
       query = query.ilike('invoice_number', '%$invoiceNumber%');
