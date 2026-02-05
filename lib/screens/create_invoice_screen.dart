@@ -280,8 +280,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
       appBar: AppBar(
         title: Text(l10n.createInvoice),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
+          TextButton(
             onPressed: () {
               setState(() {
                 _customerNameController.clear();
@@ -290,6 +289,13 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                 _items.clear();
               });
             },
+            child: const Text(
+              "Reset",
+              style: TextStyle(
+                color: Color(0xFFFF6F6F),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
@@ -576,6 +582,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
         return Card(
           margin: EdgeInsets.zero,
           child: ListTile(
+            contentPadding: const EdgeInsets.only(left: 16, right: 0),
             title: Text(item.itemName, style: const TextStyle(fontWeight: FontWeight.bold)),
             subtitle: Text(
               '${item.quantity} x ₹${item.price.toStringAsFixed(2)} - ${l10n.discount}: ${item.isDiscountItemPercentage ? "${item.discountItem}%" : "₹${item.discountItem}"}',
@@ -587,14 +594,23 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                   '₹${item.amount.toStringAsFixed(2)}',
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
+                const SizedBox(width: 12),
+                IconButton(
+                  icon: const Icon(Icons.edit_outlined, size: 20),
+                  onPressed: () => _editItem(index),
+                  color: Theme.of(context).colorScheme.primary,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
                 IconButton(
                   icon: const Icon(Icons.delete_outline, size: 20),
                   onPressed: () => setState(() => _items.removeAt(index)),
                   color: Theme.of(context).colorScheme.error,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
                 ),
               ],
             ),
-            onTap: () => _editItem(index),
           ),
         );
       },

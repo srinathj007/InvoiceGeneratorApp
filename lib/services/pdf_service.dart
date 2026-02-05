@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:pdf/src/pdf/point.dart';
 import 'package:http/http.dart' as http;
 
 import '../models/invoice.dart';
@@ -425,37 +426,38 @@ pw.Widget _buildSignatures(
     ],
   );
 }
+pw.Widget _buildWatermark(BusinessProfile profile) {
+  // Dynamic font size: 1200 / length, clamped between 20 and 100
+  double fontSize = 100;
+  if (profile.businessName.isNotEmpty) {
+    fontSize = (1200.0 / profile.businessName.length).clamp(20.0, 100.0);
+  }
 
-  pw.Widget _buildWatermark(BusinessProfile profile) {
-    // Dynamic font size for watermark to prevent cutting on long names
-    double fontSize = 80;
-    if (profile.businessName.length > 15) {
-      fontSize = (80 * 15) / profile.businessName.length;
-      if (fontSize < 35) fontSize = 35; // Don't go too small
-    }
+  // Adjust these: negative dx = left, positive dy = down (PDF points)
+  const double dx = -40; // left
+  const double dy = 60;  // down
 
-    return pw.Stack(
-      children: [
-        pw.Positioned(
-          left: -85,
-          bottom: 290,
-          child: pw.Transform.rotate(
-            angle: 0.90,
-            child: pw.Opacity(
-              opacity: 0.18,
-              child: pw.Text(
-                profile.businessName,
-                style: pw.TextStyle(
-                  font: pw.Font.timesBold(),
-                  fontSize: fontSize,
-                  letterSpacing: 2,
-                  color: PdfColor.fromInt(0xFFFF6F6F), // light red
-                ),
-              ),
-            ),
+return pw.Center(
+  child: pw.Transform.translate(
+    offset: PdfPoint(-40, -40), // left = negative, down = positive
+    child: pw.Transform.rotate(
+      angle: 0.90,
+      child: pw.Opacity(
+        opacity: 0.18,
+        child: pw.Text(
+          profile.businessName,
+          maxLines: 1,
+          softWrap: false,
+          style: pw.TextStyle(
+            font: pw.Font.timesBold(),
+            fontSize: fontSize,
+            letterSpacing: 2,
+            color: PdfColor.fromInt(0xFFFF6F6F),
           ),
         ),
-      ],
-    );
-  }
+      ),
+    ),
+  ),
+);
+}
 }
